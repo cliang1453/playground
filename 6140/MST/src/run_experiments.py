@@ -5,6 +5,7 @@
 import networkx as nx
 import time
 import sys
+import queue
 
 class RunExperiments:
 
@@ -23,23 +24,37 @@ class RunExperiments:
             V[v] = u 
             rank[u] += 1
 
-    def dfs(self, u, v, result, curr, start):
-        if curr
+    def dfs(self, curr, u, v, visited):
+        
+        if len(curr)>0 and curr[-1][1] == v:
+            return curr
 
-
-        self.MST[u]
+        for neighbor in self.MST[u]:
+            if neighbor[0] in visited:
+                continue
+            
+            curr.append((u, neighbor[0], neighbor[1]))
+            visited.add(neighbor[0])
+            result = self.dfs(curr, neighbor[0], v, visited)
+            if result is not None:
+                return result
+            visited.remove(neighbor[0])
+            curr.pop()
 
     def recomputeMST(self, u, v, weight, G):
         
-        result = []
         curr = []
-        self.dfs(u, v, result, curr, 0)
-        sorted(Cycle, key=lambda item: item[2])
-        self.MSTweight = self.MSTweight - Cycle[0][2] + weight
-        
-        if Cycle[0][1] == u and Cycle[0][2] == v:
-            self.MST[u].append(v)
-            self.MST[v].append(u)
+        result = self.dfs(curr, u, v, set([u]))
+        result.append((u, v, weight))
+        result = sorted(result, key=lambda item: item[2])
+        u_to_remove, v_to_remove, weight_to_remove = result[-1]
+        self.MSTweight = self.MSTweight - weight_to_remove + weight
+
+        if u_to_remove != u or v_to_remove != v or weight_to_remove != weight:
+            self.MST[u_to_remove].remove((v_to_remove, weight_to_remove))
+            self.MST[v_to_remove].remove((u_to_remove, weight_to_remove))
+            self.MST[u].add((v, weight))
+            self.MST[v].add((u, weight))
 
         return self.MSTweight
 
@@ -106,14 +121,20 @@ class RunExperiments:
 
         #Write initial MST weight and time to file
         output = open(output_file, 'w')
-        output.write(str(MSTweight) + " " + str(total_time))
+        output.write(str(MSTweight) + " " + str(total_time) + "\n")
 
 
         #Changes file
         self.MST = {}
+        for n in range(self.num_nodes):
+            self.MST[n] = set([])
+
         for edge in self.T:
-            self.MST[edge[0]].append((egde[1], edge[2]))
-            self.MST[edge[1]].append((egde[0], edge[2]))
+            self.MST[edge[0]].add((edge[1], edge[2]))
+            self.MST[edge[1]].add((edge[0], edge[2]))
+
+        #self.weight_check = [self.MSTweight]
+
 
         with open(change_file, 'r') as changes:
             num_changes = changes.readline()
@@ -130,8 +151,18 @@ class RunExperiments:
                 new_weight = self.recomputeMST(u, v, weight, G)
                 total_recompute = (time.time() - start_recompute) * 1000 # to convert to milliseconds
 
-                #write new weight and time to output file
+                # write new weight and time to output file
+                # self.weight_check.append(new_weight)
                 output.write(str(new_weight) + " " + str(total_recompute) + "\n")
+
+        # with open('../results/rmat0608.out', 'r') as f:
+        #     for i in range(self.num_edges + 1):
+        #         w, t = [l for l in f.readline().split()]
+        #         if self.weight_check[i] != int(w):
+        #             print(i)
+        # print('correct')
+
+
 
 
 
