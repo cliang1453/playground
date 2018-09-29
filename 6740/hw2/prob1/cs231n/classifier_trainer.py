@@ -91,7 +91,7 @@ class ClassifierTrainer(object):
           # TODO: implement the SGD update formula and store the step         #
           # update into variable dx.                                          #
           #####################################################################
-          pass
+          dx = -learning_rate * grads[p] # integrate velocity  
           #####################################################################
           #                      END OF YOUR CODE                             #
           #####################################################################

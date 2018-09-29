@@ -54,7 +54,7 @@ X, y = init_toy_data()
 #computes the class scores, the loss, and the gradients on the parameters. 
 # 
 # Implement the first part of the forward pass which uses the weights and biases 
-#to compute the scores for all inputs.
+# to compute the scores for all inputs.
 
 #get_ipython().magic('reload_ext autoreload')
 from cs231n.classifiers.neural_net import two_layer_net
@@ -322,7 +322,15 @@ best_model = None # store the best model into this
 # automatically like we did on the previous assignment.                         #
 #################################################################################
 # input size, hidden size, number of classes
-pass
+model = init_two_layer_model(32*32*3, 100, 10) # input size, hidden size, number of classes
+trainer = ClassifierTrainer()
+best_model, loss_history, train_acc, val_acc = trainer.train(X_train, y_train, X_val, y_val,
+                                             model, two_layer_net,
+                                             update='momentum',
+                                             num_epochs=20, reg=0.01,
+                                             momentum=0.9, learning_rate_decay = 0.95,
+                                             learning_rate=1e-4, verbose=True)
+
 #################################################################################
 #                               END OF YOUR CODE                                #
 #################################################################################
