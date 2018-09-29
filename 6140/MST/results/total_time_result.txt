@@ -1,0 +1,39 @@
+../data/rmat0406.gr
+static total 0.06318092346191406
+dynamic total 10.37287712097168
+../data/rmat0507.gr
+static total 0.11706352233886719
+dynamic total 19.343137741088867
+../data/rmat0608.gr
+static total 0.27489662170410156
+dynamic total 33.05840492248535
+../data/rmat0709.gr
+static total 0.5328655242919922
+dynamic total 67.14487075805664
+../data/rmat0810.gr
+static total 1.3227462768554688
+dynamic total 133.47530364990234
+../data/rmat0911.gr
+static total 5.65338134765625
+dynamic total 262.93158531188965
+../data/rmat1012.gr
+static total 6.5860748291015625
+dynamic total 535.1600646972656
+../data/rmat1113.gr
+static total 14.388799667358398
+dynamic total 1022.594690322876
+../data/rmat1214.gr
+static total 45.172691345214844
+dynamic total 2111.8314266204834
+../data/rmat1315.gr
+static total 209.716796875
+dynamic total 4349.136114120483
+../data/rmat1416.gr
+static total 751.0757446289062
+dynamic total 9787.593841552734
+../data/rmat1517.gr
+static total 4167.269229888916
+dynamic total 22087.570667266846
+../data/rmat1618.gr
+static total 19748.854160308838
+dynamic total 48335.48879623413

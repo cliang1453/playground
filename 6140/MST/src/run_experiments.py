@@ -133,9 +133,7 @@ class RunExperiments:
             self.MST[edge[0]].add((edge[1], edge[2]))
             self.MST[edge[1]].add((edge[0], edge[2]))
 
-        #self.weight_check = [self.MSTweight]
-
-
+        total_changes_time = 0
         with open(change_file, 'r') as changes:
             num_changes = changes.readline()
 
@@ -152,15 +150,15 @@ class RunExperiments:
                 total_recompute = (time.time() - start_recompute) * 1000 # to convert to milliseconds
 
                 # write new weight and time to output file
-                # self.weight_check.append(new_weight)
                 output.write(str(new_weight) + " " + str(total_recompute) + "\n")
+                total_changes_time += total_recompute
 
-        # with open('../results/rmat0608.out', 'r') as f:
-        #     for i in range(self.num_edges + 1):
-        #         w, t = [l for l in f.readline().split()]
-        #         if self.weight_check[i] != int(w):
-        #             print(i)
-        # print('correct')
+
+        output = open('../results/total_time_result.txt', 'a')
+        output.write(graph_file + "\n")
+        output.write('static total ' + str(total_time) + "\n")
+        output.write('dynamic total ' + str(total_changes_time) + "\n")
+
 
 
 
