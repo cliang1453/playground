@@ -21,11 +21,9 @@ def plot(X, C, K):
     #####################################################################
     # TODO: Implement the plot function                                 #
     #####################################################################
-    pass
-    #you may want to use
-    #plt.scatter(X[:,0], X[:,1], c=C)
-    #plt.title('Visualization of K = '+str(K), fontsize=fontsize)
-    #plt.save(...)
+    plt.scatter(X[:,0], X[:,1], c=C)
+    plt.title('Visualization of K = '+str(K), fontsize=fontsize)
+    plt.show()
     #####################################################################
     #                      END OF YOUR CODE                             #
     #####################################################################
@@ -35,10 +33,11 @@ def plot_losses(Losses):
     #####################################################################
     # TODO: Implement the plot function                                 #
     #####################################################################
-    pass
-    #you may want to use
-    #plt.title('Plot of losses', fontsize=fontsize)
-    #plt.save(...)
+    plt.plot(Losses[0])
+    plt.plot(Losses[1])
+    plt.plot(Losses[2])
+    plt.title('Plot of losses', fontsize=fontsize)
+    plt.show()
     #####################################################################
     #                      END OF YOUR CODE                             #
     #####################################################################
@@ -51,10 +50,10 @@ if __name__ == "__main__":
     
     Losses = []
     for K in [2, 3, 4]: #You should do K=2, 3, 4
-        #Do clustering
+        # Do clustering
         C, I, Loss = myGMM(data, K, max_iter)
         
-    #   Plot your result
+        # Plot your result
         plot(data, I, K)
         Losses.append(Loss)
         
