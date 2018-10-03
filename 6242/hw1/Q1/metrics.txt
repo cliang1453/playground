@@ -1,0 +1,5 @@
+Average node degree: 1.523. It is the number of edges connected to it (both in and out). It is closely related to the density of the network -- the higher the average node degree, the higher the network density.
+
+Diameter of the graph: 7. It is the longest of all the calculated shortest paths in a network between any two nodes in the grah. It is the shortest distance between the two most distant nodes in the network. The diameter is a representation of size of network.
+
+Average path length: 2.649821765569302. It is the average of all shortest path between all pairs of nodes in the graph. It represents the average number of steps to go from one node to another. 

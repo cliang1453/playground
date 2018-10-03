@@ -1,0 +1,4 @@
+1. Import movie_ID_name.csv as node table and movie_ID_sim_movie_ID.csv as edge table. 
+2. Use Force Atlas layout with repulsion 10000 to minimize the edge crossing and node overlapping
+3. Cluster nodes using distinct colors based on Modularity
+4. Adjust size of nodes and size of labels based on Degree
