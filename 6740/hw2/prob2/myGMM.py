@@ -52,7 +52,7 @@ def myGMM(X, K, maxIter):
     I = np.zeros([N, 1])
     
     # construct centers matrix
-    C = np.zeros([K, d]) # Did TA test their code before releasing???
+    C = np.zeros([K, d])
     
     # the list to record error
     Loss = []
@@ -77,7 +77,7 @@ def myGMM(X, K, maxIter):
         gamma = pi * Normal
 
         # log likelihood
-        Loss.append(np.sum(np.log(np.sum(gamma, axis=1))))
+        Loss.append(-np.sum(np.log(np.sum(gamma, axis=1))))
 
         # normalized_gamma: N*K
         gamma = gamma / np.sum(gamma, axis=1, keepdims=True)

@@ -256,18 +256,20 @@ best_model, loss_history, train_acc, val_acc = trainer.train(X_train, y_train, X
 
 
 # Plot the loss function and train / validation accuracies
+plt.figure(1)
 plt.subplot(2, 1, 1)
 plt.plot(loss_history)
 plt.title('Loss history')
 plt.xlabel('Iteration')
 plt.ylabel('Loss')
-
 plt.subplot(2, 1, 2)
 plt.plot(train_acc)
 plt.plot(val_acc)
 plt.legend(['Training accuracy', 'Validation accuracy'], loc='lower right')
 plt.xlabel('Epoch')
 plt.ylabel('Clasification accuracy')
+plt.show()
+
 
 ###############################################################################
 
@@ -276,6 +278,7 @@ from cs231n.vis_utils import visualize_grid
 # Visualize the weights of the network
 
 def show_net_weights(model):
+    plt.figure(2)
     plt.imshow(visualize_grid(model['W1'].T.reshape(-1, 32, 32, 3), padding=3).astype('uint8'))
     plt.gca().axis('off')
     plt.show()
@@ -327,7 +330,7 @@ trainer = ClassifierTrainer()
 best_model, loss_history, train_acc, val_acc = trainer.train(X_train, y_train, X_val, y_val,
                                              model, two_layer_net,
                                              update='momentum',
-                                             num_epochs=20, reg=0.01,
+                                             num_epochs=15, reg=0.02,
                                              momentum=0.9, learning_rate_decay = 0.95,
                                              learning_rate=1e-4, verbose=True)
 
@@ -335,7 +338,21 @@ best_model, loss_history, train_acc, val_acc = trainer.train(X_train, y_train, X
 #                               END OF YOUR CODE                                #
 #################################################################################
 
-
+#Plot the loss function and train / validation accuracies
+plt.figure(1)
+plt.subplot(2, 1, 1)
+plt.plot(loss_history)
+plt.title('Loss history')
+plt.xlabel('Iteration')
+plt.ylabel('Loss')
+plt.subplot(2, 1, 2)
+plt.plot(train_acc)
+plt.plot(val_acc)
+plt.legend(['Training accuracy', 'Validation accuracy'], loc='lower right')
+plt.xlabel('Epoch')
+plt.ylabel('Clasification accuracy')
+plt.show()
+ 
 # visualize the weights
 show_net_weights(best_model)
 

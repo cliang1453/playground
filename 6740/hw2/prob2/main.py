@@ -21,6 +21,7 @@ def plot(X, C, K):
     #####################################################################
     # TODO: Implement the plot function                                 #
     #####################################################################
+    plt.figure(1)
     plt.scatter(X[:,0], X[:,1], c=C)
     plt.title('Visualization of K = '+str(K), fontsize=fontsize)
     plt.show()
@@ -33,6 +34,7 @@ def plot_losses(Losses):
     #####################################################################
     # TODO: Implement the plot function                                 #
     #####################################################################
+    plt.figure(2)
     plt.plot(Losses[0])
     plt.plot(Losses[1])
     plt.plot(Losses[2])
