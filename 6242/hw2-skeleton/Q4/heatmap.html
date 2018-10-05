@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<style>
+
+rect {
+        stroke: #E6E6E6;
+        stroke-width: 1.5px;
+      }
+
+.axis text {
+  font-size: 9pt;
+  font-family: Consolas, courier;
+  fill: #000;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: none;
+}
+
+.d3-tip {
+  line-height: 1;
+  font: 14px sans-serif;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: rgb(185, 185, 185);
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+#chart {
+  width: 100%;
+  height: 100%;
+  min-width: 500px;
+  min-height: 500px;
+  position: absolute;
+}
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+<body>
+<svg id="chart"></svg>
+<script type="text/javascript">
+
+    var margin = { top: 200, right: 200, bottom: 200, left: 200 },
+        
+        width = 1200 - margin.left - margin.right,
+        height = 1100 - margin.top - margin.bottom,
+        gridSize = 100;
+
+    var xScale = d3.scale.ordinal().rangeBands([0, width]);
+    var yScale = d3.scale.ordinal().rangeBands([0, height]);
+    var xAxis = d3.svg.axis().orient("top");
+    var yAxis = d3.svg.axis().orient("left");
+
+    // Create the svg canvas
+    var svg = d3.select("#chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    book_set = [ 'Deathly Hallows','Half Blood Prince', 'Order of the Phoenix', 
+    'Goblet of Fire', 'Prisoner of Azkaban','Chamber of Secrets', "Sorcerer's Stone"];
+
+    spell_set = [ { key: 'Charm', value: 0 },
+              { key: 'Conjuration', value: 1 },
+              { key: 'Counter Spell', value: 2 },
+              { key: 'Curse', value: 3 },
+              { key: 'Healing Spell', value: 4 },
+              { key: 'Hex', value: 5 },
+              { key: 'Jinx', value: 6 },
+              { key: 'Transfiguration', value: 7 }];
+    data = []
+    count = []
+
+    d3.csv("heatmap.csv", format, function(error, data){
+        data.forEach(function(d) {
+            if (d.House == "Gryffindor"){
+                for(i=0; i<7; i++)
+                {
+                  console.log(d.Spell)
+                  count.push(+d[book_set[i]]);
+                  //[x, y, count]
+                  data.push([ spell_set[d.Spell], i, +d[book_set[i]]]);
+                }
+            }
+        });
+
+        var color = d3.scale.linear()
+                        .domain([d3.min(count), d3.max(count)])
+                        .interpolate(d3.interpolateHcl)
+                        .range([d3.rgb("#007AFF"), d3.rgb('#FFF500')]);
+
+        // Create the heatmap visualization
+        var viz = svg.selectAll(".count")
+                    .data(data)
+                    .enter().append("rect")
+                        .attr("class", "count")
+                        .attr("x", function(d, i) {return gridSize * d[0]; })
+                        .attr("y", function(d, i) {return gridSize * (7-d[1]); })
+                        .attr("width",gridSize)
+                        .attr("height", gridSize)
+                        .style("fill", function(d){return color(d[2]) ; })
+
+          var names = [];
+          data.slice(0, 8).forEach(function(d){
+            names.push(d.axis2);
+          });
+
+          // Add the horizontal labels
+          xScale.domain(names);
+
+          xAxis.scale(xScale);
+
+          svg.append("g")
+                .attr("class", "x axis")
+                .call(xAxis)
+                .selectAll("text")
+                    .attr("y", -10)
+                    .attr("dy", ".5em")
+                    .attr("x", 0)
+                    .attr("transform", "rotate(-45)")
+                    .style("text-anchor", "start")
+                    .style("font-weight", "bold");
+
+          // Add the vertical labels
+          yScale.domain(names);
+
+          yAxis.scale(yScale);
+
+          svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .selectAll("text")
+                    .style("text-anchor", "end");
+
+    });
+
+function resize() {
+
+  var dim = Math.min(parseInt(d3.select("#chart").style("width")), parseInt(d3.select("#chart").style("height"))),
+  width = dim - margin.left - margin.right,
+  height = dim - margin.top - margin.bottom;
+
+  gridSize = width / 17;
+
+  // Update the range of the scale with new width/height
+  xScale.rangeBands([0, width]);
+  yScale.rangeBands([0, height]);
+
+  // Update the axis and text with the new scale
+  svg.select('.x.axis')
+    .call(xAxis)
+    .selectAll("text")
+        .attr("y", -10)
+        .attr("dy", ".5em")
+        .attr("x", 0)
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "start")
+
+  svg.select('.y.axis')
+    .call(yAxis);
+
+  svg.selectAll('.correlation')
+    .attr("x", function(d, i) {return gridSize * Math.floor( i / categories ) ;})
+    .attr("y", function(d, i) {return gridSize * ( i % categories );})
+    .attr("width",gridSize)
+    .attr("height", gridSize);
+}
+
+d3.select(window).on('resize', resize);
+
+resize();
+
+function format(d) {
+  d.value = +d.value;
+  return d;
+}
+
+</script>
+</body>
