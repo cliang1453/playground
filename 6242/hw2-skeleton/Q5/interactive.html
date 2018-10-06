@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Simple Bar chart</title>
+    <script src="../lib/d3.v3.min.js" charset="utf-8"></script>
+    <script src="../lib/d3.tip.v0.6.3.js" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: Cursive;
+        }
+        
+        .rectangle {
+            fill: grey;
+        }
+
+        .rectangle:hover {
+            fill: orange;
+        }
+        
+        .axis {
+            font-size: 15px;
+            fill: grey;
+        }
+
+        .p_axis {
+            font-size: 13px;
+            fill: grey;
+        }
+        
+/*        .axis path,*/
+        .line {
+          fill: none;
+          stroke: grey;
+          stroke-width: 2px;
+        }
+        
+        .label {
+            font-size: 15px;
+            fill: white;
+        }
+
+        .p_label{
+            font-size: 15px;
+            fill: grey;
+        }
+
+        .d3-tip {
+              
+              line-height: 1;
+/*              padding: 6px;*/
+              background: wheat;
+              border-radius: 4px solid black;
+              font-size: 12px;
+
+              width: 500px;
+              top:2em!important;
+              left:70%!important;
+              margin-left:-100px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="graphic"></div>
+
+    <script>
+        var data = [{city: 'San Antonio', population_2012: 1383505, growth: {year_2013:25405, year_2014:26644 , year_2015:28593 , year_2016:23591 , year_2017:24208}},
+                    {city: 'New York', population_2012: 8383504, growth: {year_2013:75138 , year_2014:62493 , year_2015:61324 , year_2016:32967 , year_2017:7272}},
+                    {city: 'Chicago', population_2012: 2717989, growth: {year_2013:6493 , year_2014:2051 , year_2015:-1379 , year_2016:-4879 , year_2017:-3825}},
+                    {city: 'Los Angeles', population_2012: 3859267, growth:{year_2013:32516 , year_2014:30885 , year_2015:30791 , year_2016:27657 , year_2017:18643}},
+                    {city: 'Phoenix', population_2012: 1495880, growth: {year_2013:25302 , year_2014:26547 , year_2015:27310 , year_2016:27003 , year_2017:24036}}];
+
+        //sort bars based on value
+        data = data.sort(function (a, b) {
+            return d3.ascending(a.population_2012, b.population_2012);
+        })
+
+        var growth_rate = {}
+        var rate = {}
+        var curr_pop = {}
+
+        data.forEach(function(d) {
+            growth_rate[d.city] = [];
+            rate[d.city] = [];
+            curr_pop[d.city] = d.population_2012;
+        });
+
+        data.forEach(function(d) {
+            for (var i = 2013; i < 2018; i++) {
+                rate[d.city].push(d.growth["year_" + i.toString()]/curr_pop[d.city]*100)
+                growth_rate[d.city].push([i,  d.growth["year_" + i.toString()]/curr_pop[d.city]*100]);
+                curr_pop[d.city] = curr_pop[d.city] + d.growth["year_" + i.toString()];
+            }
+        });
+
+
+        var p_margin = {top: 30, right: 50, bottom: 50, left: 80};
+        var p_width = 500 - p_margin.left - p_margin.right;
+        var p_height = 400 - p_margin.top - p_margin.bottom;
+
+        //set up svg using margin conventions - we'll need plenty of room on the left for labels
+        var margin = {
+            top: 100,
+            right: 200,
+            bottom: 100,
+            left: 100
+        };
+
+        var width = 1100 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        var Comma = d3.format(",.0f");
+
+        var svg = d3.select("#graphic").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var x = d3.scale.linear()
+            .range([0, width])
+            .domain([0, d3.max(data, function (d) {
+                return curr_pop[d.city];
+            })]);
+
+        var y = d3.scale.ordinal()
+            .rangeRoundBands([height, 0], .1)
+            .domain(data.map(function (d) {
+                return d.city;
+            }));
+
+        //make y axis to show bar names
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            //no tick marks
+            .tickSize(0)
+            .orient("left");
+
+        var gy = svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+
+
+        var tool_tip = d3.tip()
+                      .attr("class", "d3-tip")
+                      //.offset([20, 120])
+                      //.attr("transform", "translate(900, 0)")
+                      .html("<p></p><div id='tipDiv'></div>");
+        
+        svg.call(tool_tip);
+
+        var bars = svg.selectAll("rectangle")
+            .data(data)
+            .enter()
+            .append("g")
+
+
+        //append rects
+        bars.append("rect")
+            .attr("class", "rectangle")
+            .attr("y", function (d) {
+                return y(d.city);
+            })
+            .attr("height", y.rangeBand())
+            .attr("x", 0)
+            .attr("width", function (d) {
+                return x(curr_pop[d.city]);
+            })
+            .on('mouseover', function(d) {
+                
+                tool_tip.show();
+
+                var tipSVG = d3.select("#tipDiv")
+                               .append("svg")
+                               .attr("width", p_width + p_margin.left + p_margin.right)
+                               .attr("height", p_height + p_margin.top + p_margin.bottom)
+                               .append("g")
+                               .attr("transform", "translate(" + p_margin.left + "," + p_margin.top + ")");
+
+                
+                var p_x = d3.scale.linear().range([0, p_width]).domain([2013, 2017]);
+                var p_y = d3.scale.linear().range([p_height, 0]).domain([d3.min(rate[d.city]), d3.max(rate[d.city])]);
+
+                var p_xAxis = d3.svg.axis().scale(p_x).orient("bottom").ticks(5);
+                var p_yAxis = d3.svg.axis().scale(p_y).orient("left").ticks(10);
+
+                var valueline = d3.svg.line()
+                                .x(function(d) { return p_x(d[0]); })
+                                .y(function(d) { return p_y(d[1]); });
+
+                // Add the valueline path.
+                tipSVG.append("path")
+                    .attr("class", "line")
+                    .attr("d", valueline(growth_rate[d.city]));
+
+                // Add the X Axis
+                tipSVG.append("g")
+                    .attr("class", "p_axis")
+                    .attr("transform", "translate(0," + p_height + ")")
+                    .call(p_xAxis);
+
+                // Add the Y Axis
+                tipSVG.append("g")
+                    .attr("class", "p_axis")
+                    .call(p_yAxis);
+
+                // Add x label
+                tipSVG.append("text")
+                    .attr("class", "p_label")
+                    .attr("transform", "translate(" + (p_width + 10) + " ," + p_height + ")")
+                    .text("Year");
+
+                // Add x label
+                tipSVG.append("text")
+                    .attr("class", "p_label")
+                    .attr("transform", "translate(" + 0 + " ," + (-10) + ")")
+                    .text("Percent%");
+
+              })
+            .on('mouseout', tool_tip.hide);
+
+        bars.append("text")
+            .attr("class", "label")
+            .attr("y", function (d) {
+                return y(d.city) + y.rangeBand() / 2 + 4;
+            })
+            .attr("x", function (d) {
+                return 15;
+            })
+            .text(function (d) {
+                return Comma(curr_pop[d.city]);
+            })
+        
+    </script>
+
+</body>
+
+</html>

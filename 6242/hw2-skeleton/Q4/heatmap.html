@@ -1,206 +1,182 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html>
-<style>
+    <style>
+        rect {
+                stroke: #E6E6E6;
+                stroke-width: 4px;
+              }
 
-rect {
-        stroke: #E6E6E6;
-        stroke-width: 1.5px;
-      }
+        .axis text {
+          font-size: 17px;
+          font-family: Cursive;
+          fill: #000;
+        }
 
-.axis text {
-  font-size: 9pt;
-  font-family: Consolas, courier;
-  fill: #000;
-}
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: none;
+        }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: none;
-}
+        #chart {
+          width: 100%;
+          height: 100%;
+          min-width: 500px;
+          min-height: 500px;
+        }
 
-.d3-tip {
-  line-height: 1;
-  font: 14px sans-serif;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: rgb(185, 185, 185);
-  border-radius: 2px;
-}
+    </style>
+    <head><script src="../lib/d3.v3.min.js" charset="utf-8"></script></head>
+    <body>
+        <svg id="chart"></svg>
+        <script type="text/javascript">
 
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
-}
+          var margin = { top: 100, right: 200, bottom: 200, left: 200 },
+              
+              width = 1040 - margin.left - margin.right,
+              height = 860 - margin.top - margin.bottom,
+              gridSize = 80;
 
-/* Style northward tooltips differently */
-.d3-tip.n:after {
-  margin: -1px 0 0 0;
-  top: 100%;
-  left: 0;
-}
+          // Create the svg canvas
+          var svg = d3.select("#chart")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+              .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
-#chart {
-  width: 100%;
-  height: 100%;
-  min-width: 500px;
-  min-height: 500px;
-  position: absolute;
-}
+          var y_names = [ 'Deathly Hallows','Half Blood Prince', 'Order of the Phoenix', 
+                          'Goblet of Fire', 'Prisoner of Azkaban','Chamber of Secrets', "Sorcerer's Stone"];
+          
+          var x_names = ["Charm", "Conjuration", "Counter Spell", "Curse", 
+                         "Healing Spell", "Hex", "Jinx", "Transfiguration"];
 
-</style>
+          var spell_set = {"Charm": 0, "Conjuration": 1, "Counter Spell": 2, "Curse": 3, 
+                           "Healing Spell": 4, "Hex": 5, "Jinx": 6, "Transfiguration": 7};
+          
+          var grid_set = []
+          var count = []
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+          var yScale = d3.scale.ordinal().domain(y_names).rangeBands([margin.top + height, margin.top]);
+          var yAxis = d3.svg.axis().orient("left").scale(yScale);
+          var xScale = d3.scale.ordinal().domain(x_names).rangeBands([margin.left, margin.left + width]);
+          var xAxis = d3.svg.axis().orient("bottom").scale(xScale);
 
-<body>
-<svg id="chart"></svg>
-<script type="text/javascript">
+          //options 
+          var data = ["Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"];
+          var select = d3.select('body')
+                         .append('select')
+                         .attr('class','select')
+                         .on('change', onchange)
+                         .property("selected", function(d){ return d === "Gryffindor"; });
 
-    var margin = { top: 200, right: 200, bottom: 200, left: 200 },
-        
-        width = 1200 - margin.left - margin.right,
-        height = 1100 - margin.top - margin.bottom,
-        gridSize = 100;
+          var options = select.selectAll('option')
+                              .data(data).enter()
+                              .append('option')
+                              .text(function (d) { return d; });
 
-    var xScale = d3.scale.ordinal().rangeBands([0, width]);
-    var yScale = d3.scale.ordinal().rangeBands([0, height]);
-    var xAxis = d3.svg.axis().orient("top");
-    var yAxis = d3.svg.axis().orient("left");
-
-    // Create the svg canvas
-    var svg = d3.select("#chart")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    book_set = [ 'Deathly Hallows','Half Blood Prince', 'Order of the Phoenix', 
-    'Goblet of Fire', 'Prisoner of Azkaban','Chamber of Secrets', "Sorcerer's Stone"];
-
-    spell_set = [ { key: 'Charm', value: 0 },
-              { key: 'Conjuration', value: 1 },
-              { key: 'Counter Spell', value: 2 },
-              { key: 'Curse', value: 3 },
-              { key: 'Healing Spell', value: 4 },
-              { key: 'Hex', value: 5 },
-              { key: 'Jinx', value: 6 },
-              { key: 'Transfiguration', value: 7 }];
-    data = []
-    count = []
-
-    d3.csv("heatmap.csv", format, function(error, data){
-        data.forEach(function(d) {
-            if (d.House == "Gryffindor"){
-                for(i=0; i<7; i++)
-                {
-                  console.log(d.Spell)
-                  count.push(+d[book_set[i]]);
-                  //[x, y, count]
-                  data.push([ spell_set[d.Spell], i, +d[book_set[i]]]);
-                }
-            }
-        });
-
-        var color = d3.scale.linear()
-                        .domain([d3.min(count), d3.max(count)])
-                        .interpolate(d3.interpolateHcl)
-                        .range([d3.rgb("#007AFF"), d3.rgb('#FFF500')]);
-
-        // Create the heatmap visualization
-        var viz = svg.selectAll(".count")
-                    .data(data)
-                    .enter().append("rect")
-                        .attr("class", "count")
-                        .attr("x", function(d, i) {return gridSize * d[0]; })
-                        .attr("y", function(d, i) {return gridSize * (7-d[1]); })
-                        .attr("width",gridSize)
-                        .attr("height", gridSize)
-                        .style("fill", function(d){return color(d[2]) ; })
-
-          var names = [];
-          data.slice(0, 8).forEach(function(d){
-            names.push(d.axis2);
-          });
+          update("Gryffindor")
 
           // Add the horizontal labels
-          xScale.domain(names);
-
-          xAxis.scale(xScale);
-
           svg.append("g")
-                .attr("class", "x axis")
-                .call(xAxis)
-                .selectAll("text")
-                    .attr("y", -10)
-                    .attr("dy", ".5em")
-                    .attr("x", 0)
-                    .attr("transform", "rotate(-45)")
-                    .style("text-anchor", "start")
-                    .style("font-weight", "bold");
+              .attr("class", "axis")
+              .attr("transform", "translate(0," + (margin.top + height + 80)  + ")")
+              .call(xAxis)
+              .selectAll("text")  
+                  .style("text-anchor", "end")
+                  .attr("dx", "-.8em")
+                  .attr("dy", ".15em")
+                  .attr("transform", function(d) {
+                      return "rotate(-90)" 
+                      });
+
+          svg.append("text")
+              .attr("transform", "translate(" + (margin.left+width + 80) + "," + (margin.top + height + 80)  + ")")
+              .style("font-family", "Cursive")
+              .style("text-anchor", "middle")
+              .attr('font-weight', 'bold')
+              .text("Spell Type")
 
           // Add the vertical labels
-          yScale.domain(names);
-
-          yAxis.scale(yScale);
-
           svg.append("g")
-                .attr("class", "y axis")
+                .attr("class", "axis")
                 .call(yAxis)
+                .attr("transform", "translate(" + margin.left + "," + margin.top*3/4 + " )")
                 .selectAll("text")
-                    .style("text-anchor", "end");
+                .style("text-anchor", "end");
 
-    });
+          svg.append("text")
+              .attr("transform", "translate(" +  margin.left + "," + margin.top*3/2+ ")")
+              .style("font-family", "Cursive")
+              .style("text-anchor", "middle")
+              .attr('font-weight', 'bold')
+              .text("Book")
+          
 
-function resize() {
+          function onchange() {
+              selectValue = d3.select('select').property('value');
+              update(selectValue);
+          };
 
-  var dim = Math.min(parseInt(d3.select("#chart").style("width")), parseInt(d3.select("#chart").style("height"))),
-  width = dim - margin.left - margin.right,
-  height = dim - margin.top - margin.bottom;
+          function update(selectValue){
+                
+                d3.csv("heatmap.csv", function(error, data){
+                    data.forEach(function(d) {
+                        if (d.House == selectValue){
+                            for(i=0; i<7; i++)
+                            {
+                              count.push(+d[y_names[i]]);
+                              grid_set.push([ spell_set[d.SpellType], i, +d[y_names[i]]]);
+                            }
+                        }
+                    });
 
-  gridSize = width / 17;
+                    var color = d3.scale.quantize()
+                                .domain([d3.min(count), d3.max(count)])
+                                .range(['#f7fcf0','#e0f3db','#ccebc5','#a8ddb5','#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081']);
 
-  // Update the range of the scale with new width/height
-  xScale.rangeBands([0, width]);
-  yScale.rangeBands([0, height]);
+                    // Create the heatmap visualization
+                    var viz = svg.selectAll(".count")
+                                .data(grid_set)
+                                .enter().append("rect")
+                                    .attr("class", "count")
+                                    .attr("x", function(d, i) {return margin.left + gridSize * d[0]; })
+                                    .attr("y", function(d, i) {return margin.top + gridSize * (7-d[1]); })
+                                    .attr("width",gridSize)
+                                    .attr("height", gridSize)
+                                    .style("fill", function(d){return color(d[2]) ; });
 
-  // Update the axis and text with the new scale
-  svg.select('.x.axis')
-    .call(xAxis)
-    .selectAll("text")
-        .attr("y", -10)
-        .attr("dy", ".5em")
-        .attr("x", 0)
-        .attr("transform", "rotate(-45)")
-        .style("text-anchor", "start")
+                    var legend = svg.selectAll(".legend")
+                          .data(color.range());
 
-  svg.select('.y.axis')
-    .call(yAxis);
+                    legend.exit().remove();
 
-  svg.selectAll('.correlation')
-    .attr("x", function(d, i) {return gridSize * Math.floor( i / categories ) ;})
-    .attr("y", function(d, i) {return gridSize * ( i % categories );})
-    .attr("width",gridSize)
-    .attr("height", gridSize);
-}
+                    legend.enter().append("rect")
+                        .attr("width", 30)
+                        .attr("height", 50)
+                        .style("fill", function(d){return d})
+                        .attr("transform", function(d, i) { 
+                          return "translate(" + (margin.left + width + 50) + "," + (margin.top + 80 + i * 50) + ")";});
 
-d3.select(window).on('resize', resize);
+                    legend.enter().append("text")
+                          .text(function(d) { var r = color.invertExtent(d); return Math.floor(r[0]);})
+                          .style("font-family", "Cursive")
+                          .attr("transform", function(d, i) { 
+                            return "translate(" + (margin.left + width + 90) + "," + (margin.top + 90 + i * 50) + ")";});
 
-resize();
+                    legend.enter().append("text")
+                          .text("No. of Spells")
+                          .style("font-family", "Cursive")
+                          .attr('font-weight', 'bold')
+                          .attr("transform", "translate(" + (margin.left + width + 50) + "," + (margin.top + 50) + ")");
 
-function format(d) {
-  d.value = +d.value;
-  return d;
-}
 
-</script>
-</body>
+                    legend.exit().remove();
+
+                });
+          };
+
+
+        </script>
+    </body>
+</html>
