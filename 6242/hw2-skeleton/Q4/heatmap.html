@@ -64,9 +64,6 @@
 
           var spell_set = {"Charm": 0, "Conjuration": 1, "Counter Spell": 2, "Curse": 3, 
                            "Healing Spell": 4, "Hex": 5, "Jinx": 6, "Transfiguration": 7};
-          
-          var grid_set = []
-          var count = []
 
           var yScale = d3.scale.ordinal().domain(y_names).rangeBands([margin.top + height, margin.top]);
           var yAxis = d3.svg.axis().orient("left").scale(yScale);
@@ -131,6 +128,9 @@
           };
 
           function update(selectValue){
+
+                var grid_set = []
+                var count = []
                 
                 d3.csv("heatmap.csv", function(error, data){
                     data.forEach(function(d) {
@@ -147,6 +147,7 @@
                                 .domain([d3.min(count), d3.max(count)])
                                 .range(['#f7fcf0','#e0f3db','#ccebc5','#a8ddb5','#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081']);
 
+                    svg.selectAll(".count").remove();
                     // Create the heatmap visualization
                     var viz = svg.selectAll(".count")
                                 .data(grid_set)

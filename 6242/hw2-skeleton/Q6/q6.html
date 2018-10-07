@@ -154,7 +154,7 @@
                       tipSVG.append("text")
                           .attr("class", "tip_text")
                           .attr("transform", "translate(" + (-10) + " ," + 0 + ")")
-                          .text("County: " + nameById.get(d.id));
+                          .text("County: " + nameById.get(d.id).split(" ").slice(0, -1).join(" "));
 
                       tipSVG.append("text")
                           .attr("class", "tip_text")
@@ -174,7 +174,7 @@
                       tipSVG.append("text")
                           .attr("class", "tip_text")
                           .attr("transform", "translate(" + (-10) + " ," + 120 + ")")
-                          .text("Middle school or lower graduates: " + MiddleById.get(d.id));
+                          .text("Middle School or Lower Graduates: " + MiddleById.get(d.id));
 
                       })
                 .on("mouseout", tool_tip.hide);
