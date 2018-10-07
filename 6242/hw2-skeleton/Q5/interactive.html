@@ -99,20 +99,21 @@
         });
 
 
-        var p_margin = {top: 30, right: 50, bottom: 50, left: 80};
-        var p_width = 500 - p_margin.left - p_margin.right;
-        var p_height = 400 - p_margin.top - p_margin.bottom;
+        var p_margin = {top: 10, right: 15, bottom: 50, left: 80};
+        var p_width = 350 - p_margin.left - p_margin.right;
+        var p_height = 250 - p_margin.top - p_margin.bottom;
+        var ori_w = 600
 
         //set up svg using margin conventions - we'll need plenty of room on the left for labels
         var margin = {
             top: 100,
-            right: 200,
+            right: 400,
             bottom: 100,
             left: 100
         };
 
         var width = 1100 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            height = 600 - margin.top - margin.bottom;
 
         var Comma = d3.format(",.0f");
 
@@ -137,22 +138,12 @@
         //make y axis to show bar names
         var yAxis = d3.svg.axis()
             .scale(y)
-            //no tick marks
             .tickSize(0)
             .orient("left");
 
         var gy = svg.append("g")
             .attr("class", "y axis")
             .call(yAxis)
-
-
-        var tool_tip = d3.tip()
-                      .attr("class", "d3-tip")
-                      //.offset([20, 120])
-                      //.attr("transform", "translate(900, 0)")
-                      .html("<p></p><div id='tipDiv'></div>");
-        
-        svg.call(tool_tip);
 
         var bars = svg.selectAll("rectangle")
             .data(data)
@@ -172,57 +163,50 @@
                 return x(curr_pop[d.city]);
             })
             .on('mouseover', function(d) {
-                
-                tool_tip.show();
-
-                var tipSVG = d3.select("#tipDiv")
-                               .append("svg")
-                               .attr("width", p_width + p_margin.left + p_margin.right)
-                               .attr("height", p_height + p_margin.top + p_margin.bottom)
-                               .append("g")
-                               .attr("transform", "translate(" + p_margin.left + "," + p_margin.top + ")");
-
-                
-                var p_x = d3.scale.linear().range([0, p_width]).domain([2013, 2017]);
+            
+                var p_x = d3.scale.linear().range([ori_w + p_margin.left, ori_w + p_margin.left + p_width]).domain([2013, 2017]);
                 var p_y = d3.scale.linear().range([p_height, 0]).domain([d3.min(rate[d.city]), d3.max(rate[d.city])]);
-
                 var p_xAxis = d3.svg.axis().scale(p_x).orient("bottom").ticks(5);
                 var p_yAxis = d3.svg.axis().scale(p_y).orient("left").ticks(10);
-
                 var valueline = d3.svg.line()
                                 .x(function(d) { return p_x(d[0]); })
                                 .y(function(d) { return p_y(d[1]); });
 
                 // Add the valueline path.
-                tipSVG.append("path")
+                svg.append("path")
                     .attr("class", "line")
                     .attr("d", valueline(growth_rate[d.city]));
 
                 // Add the X Axis
-                tipSVG.append("g")
-                    .attr("class", "p_axis")
-                    .attr("transform", "translate(0," + p_height + ")")
-                    .call(p_xAxis);
+                svg.append("g")
+                     .attr("class", "p_axis")
+                     .attr("transform", "translate(" + 0 + "," + p_height + ")")
+                     .call(p_xAxis);
 
-                // Add the Y Axis
-                tipSVG.append("g")
+                // // Add the Y Axis
+                svg.append("g")
                     .attr("class", "p_axis")
+                    .attr("transform", "translate(" + (ori_w+p_margin.left) + "," + 0 + ")")
                     .call(p_yAxis);
 
-                // Add x label
-                tipSVG.append("text")
+                // // Add x label
+                svg.append("text")
                     .attr("class", "p_label")
-                    .attr("transform", "translate(" + (p_width + 10) + " ," + p_height + ")")
+                    .attr("transform", "translate(" + (ori_w+p_margin.left+p_width) + " ," + p_height + ")")
                     .text("Year");
 
-                // Add x label
-                tipSVG.append("text")
+                // Add y label
+                svg.append("text")
                     .attr("class", "p_label")
-                    .attr("transform", "translate(" + 0 + " ," + (-10) + ")")
+                    .attr("transform", "translate(" + (ori_w+p_margin.left) + " ," + (-10) + ")")
                     .text("Percent%");
 
               })
-            .on('mouseout', tool_tip.hide);
+            .on('mouseout', function(d){
+                svg.select(".line").remove();
+                svg.selectAll(".p_axis").remove();
+                svg.selectAll(".p_label").remove();
+            });
 
         bars.append("text")
             .attr("class", "label")
