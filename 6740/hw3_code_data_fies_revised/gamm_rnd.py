@@ -21,14 +21,14 @@ def gamm_rnd(nrow,ncol,m,k):
 # REFERENCES: Luc Devroye, Non-Uniform Random Variate Generation, 
 #            New York: Springer Verlag, 1986, ch 9.3-6.
 
-    gb = np.ones(nrow,ncol)*0
+    gb = np.ones((nrow,ncol))*0
     if m <= 1:
         #Use RGS algorithm by Best, p. 426
         c=1/m
         t=0.07+0.75*math.sqrt(1-m)
         b=1+math.exp(-t)*m/t
-        for i1 in range(1,nrow+1):
-            for i2 in range(1,ncol+1):
+        for i1 in range(nrow):
+          for i2 in range(ncol):
                 accept = 0
                 while (accept == 0):
                     u = random.uniform(0,1)
@@ -36,7 +36,7 @@ def gamm_rnd(nrow,ncol,m,k):
                     v = b*u
                     if v <= 1:
                         x = t*(v**c)
-                        accept = (w<=(2-x)/(2+x)) or (w<=math.exp(-x))
+                        accept = (w<=((2-x)/(2+x))) or (w<=math.exp(-x))
                     else:
                         x = -math.log(c*t*(b-v))
                         y = x/t
@@ -48,8 +48,8 @@ def gamm_rnd(nrow,ncol,m,k):
         c=3*m-0.75
         for i1 in range(1,nrow+1):
             for i2 in range(1,ncol+1):
-               accept=0
-               while (accept==0):
+               accept=False
+               while (accept==False):
                   u=random.uniform(0,1)
                   v=random.uniform(0,1)
                   w=u*(1-u)

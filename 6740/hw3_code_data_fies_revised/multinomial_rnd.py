@@ -10,7 +10,7 @@ def multinomial_rnd(p,n):
 #    p     = K-dim. vector of multinomial weights (possibly unnormalized)
 #    ddraw = N-dim. vector containing multinomial samples in {1,...,K}
 
-    ps = p.cumsum()
+    ps = np.cumsum(p)
 
     if n == 1:
         s = sum(ps[-1]*random.random() > ps) + 1

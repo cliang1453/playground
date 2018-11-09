@@ -7,8 +7,8 @@ def dirichlet_rnd(alpha, numsamps):
     # alpha = K-dim. vector of Dirichlet parameters
     # ddraw = KxN matrix where each column is a sample
     kdim = len(alpha)
-    al = np.zeros(kdim, numsamps)
+    al = np.zeros([kdim, numsamps])
     for k in range(kdim):
-        al[k, :] = np.random.gamma(1, numsamps, (alpha[k],1))
+        al[k, :] = np.random.gamma(1, numsamps, (int(alpha[k]),1))
     ddraw = al/np.tile(np.sum(al,axis=0), (kdim, 1))
     return ddraw
