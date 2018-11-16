@@ -1,0 +1,62 @@
+****************************************
+Q3.1
+
+Linear Regression - 
+	Training Accuracy: 
+	Testing Accuracy: 
+
+SVM -
+	Training Accuracy: 
+	Testing Accuracy: 
+
+MLP - 
+	Training Accuracy: 
+	Testing Accuracy: 
+
+Random Forest - 
+	Training Accuracy: 
+	Testing Accuracy: 
+
+****************************************
+Q3.2 - Hyperparameter tuning
+
+Random Forest - 
+	n_estimators values tested (at least 3): 
+
+	max_depth values tested (at least 3): 
+		
+	Best combination of parameter values:
+		n_estimators: 
+		max_depth: 
+
+	Testing Accuracy before tuning (default parameters):
+	Testing Accuracy after tuning:
+
+
+SVM -
+	Kernels values tested: rbf, linear
+	C values tested (at least 3): 
+		
+	Best combination of parameter values: 
+		Kernel: 
+		C: 
+
+	Testing Accuracy before tuning (default parameters):
+	Testing Accuracy after tuning:
+
+****************************************
+Q3.3
+
+For your SVM's CV run from Q3.2, state the highest mean testing accuracy 
+across the sets of parameter values and its corresponding mean train score and mean fit time. 
+
+SVM's highest mean testing/cross-validated accuracy (best score): 
+SVM's mean train score: 
+SVM's mean fit time: 
+
+****************************************
+Q3.4
+
+Best Classifier:
+Why: 
+
