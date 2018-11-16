@@ -39,22 +39,31 @@ alphaSB = 1.0
 logProb = []
 labels = []
 llik = []
+from tempfile import TemporaryFile
+
 for qq in range(numTrial):
   z,pi,W,lp,_ = mGibbs(graphMask, K, alphaSB, numIter)
   logProb.append(lp)
-  l, p = predict(graph, graphMask, z, W)
-  labels.append(l)
-  llik.append(p)
+  np.save('logProb_' + str(qq) + '.npy', logProb)
+  np.save('graph_' + str(qq) + '.npy', graph)
+  np.save('graphMask_' + str(qq) + '.npy', graphMask)
+  np.save('z_' + str(qq) + '.npy', z)
+  np.save('W_' + str(qq) + '.npy', W)
+#   l, p = predict(graph, graphMask, z, W)
+#   labels.append(l)
+#   llik.append(p)
 
-logProb = np.asarray(logProb).T
-llik = np.asarray(llik).T
-labels = np.asarray(labels).T
+# logProb = np.asarray(logProb).T
+# llik = np.asarray(llik).T
+# labels = np.asarray(labels).T
 
-# Plot results
+# # Plot results
 # plt.plot(logProb)
-plt.xlabel('Iteration')
-plt.ylabel('Log probability')
+# plt.xlabel('Iteration')
+# plt.ylabel('Log probability')
+# plt.show()
 
 
-sBest, sProb = np.argmax(logProb[-1,:]), max(logProb[-1,:])
-[sROC,sAlarm,sDetect] = areaROC(llik[:,sBest], labels[:,sBest], '-b')
+# sBest, sProb = np.argmax(logProb[-1,:]), max(logProb[-1,:])
+# [sROC,sAlarm,sDetect] = areaROC(llik[:,sBest], labels[:,sBest], '-b')
+

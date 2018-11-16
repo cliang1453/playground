@@ -41,8 +41,8 @@ def areaROC(confidence, testClass, plotStyle=''):
   alarmRate  = np.zeros(numpoints)
   detectRate = np.zeros(numpoints)
   for ii in range(numpoints):
-    detectRate[ii] = sum(confPres>= confAbsResamp[ii]) / len(ndxPres)
-    alarmRate[ii]  = sum(confAbs >= confAbsResamp[ii]) / len(ndxAbs)
+     detectRate[ii] = sum(confPres>= confAbsResamp[ii]) / len(ndxPres[0])
+     alarmRate[ii] = sum(confAbs >= confAbsResamp[ii]) / len(ndxAbs[0])
 
   # % compute area under ROC curve
   aROC = abs(sum((alarmRate[1:]-alarmRate[:-1])*(detectRate[1:]+detectRate[:-1])/2))
@@ -53,5 +53,6 @@ def areaROC(confidence, testClass, plotStyle=''):
     plt.xticks(locs, [0,1,0,1])
     plt.ylabel('Detection Rate')
     plt.xlabel('False Alarm Rate')
+    plt.show()
 
   return [aROC, alarmRate, detectRate]

@@ -42,6 +42,12 @@ plt.plot(logProb)
 plt.xlabel('Iteration')
 plt.ylabel('Log probability')
 
+plt.show()
+
 plt.plot(randI)
 plt.xlabel('Iteration')
 plt.ylabel('Rand index')
+
+plt.show()
+
+

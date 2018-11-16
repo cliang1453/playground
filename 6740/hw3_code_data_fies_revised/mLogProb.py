@@ -17,6 +17,7 @@ def mLogProb(adj, z, pi, W, alpha):
     mask = (np.ones((N, N)) - np.identity(N)) > 0
     mask = np.multiply(mask, adj >= 0)
     logProb = dirichlet_logprob(np.dot(alpha, np.ones(K)), pi)
+
     for kk in range(K):
         for ll in range(K):
             logProb = logProb + dirichlet_logprob(
@@ -27,9 +28,11 @@ def mLogProb(adj, z, pi, W, alpha):
         logProb = logProb + logPi[int(z[ii])]
     logW = np.log(W)
     logMW = np.log(1 - W)
+
     for ii in range(N):
         for jj in mask[ii, :].ravel().nonzero():
             src = z[ii]
             rcv = z[jj]
             logProb = logProb + np.dot(adj[ii, jj], logW[src, rcv]) + np.dot((1 - adj[ii, jj]), logMW[src, rcv])
+    
     return logProb

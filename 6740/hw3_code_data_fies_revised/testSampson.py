@@ -27,10 +27,16 @@ for qq in range(numTrial):
     z, pi, W, lp, ri = mGibbs(graph, K, alphaSB, numIter, monk_factions)
     logProb.append(lp)
     randI.append(ri)
+
+logProb = np.asarray(logProb).T
+randI = np.asarray(randI).T
+
 plt.plot(logProb)
 plt.xlabel('Iteration')
 plt.ylabel('Log probability')
+plt.show()
 
 plt.plot(randI)
 plt.xlabel('Iteration')
 plt.ylabel('Rand index')
+plt.show()

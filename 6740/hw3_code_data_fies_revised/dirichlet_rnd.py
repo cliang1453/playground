@@ -9,6 +9,6 @@ def dirichlet_rnd(alpha, numsamps):
     kdim = len(alpha)
     al = np.zeros([kdim, numsamps])
     for k in range(kdim):
-        al[k, :] = np.random.gamma(1, numsamps, (int(alpha[k]),1))
+        al[k, :] = np.random.gamma(1, numsamps, (1,1))
     ddraw = al/np.tile(np.sum(al,axis=0), (kdim, 1))
     return ddraw

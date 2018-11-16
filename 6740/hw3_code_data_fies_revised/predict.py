@@ -22,7 +22,8 @@ def predict(adj, mask, z, W):
                 labels[index] = adj[ii, jj]
                 """
                 TODO: Compute probability that adj[ii,jj]=1
-                prob[index] = ?
                 """
+                prob[index] = np.power(W[z[ii]][z[jj]], adj[ii][jj]) * np.power(1-W[z[ii]][z[jj]], 1-adj[ii][jj])
+                #prob[index] = W[z[ii]][z[jj]]
                 index += 1
     return [labels, prob]
