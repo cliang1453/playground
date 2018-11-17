@@ -54,6 +54,12 @@ class RandomForest(object):
 
         samples = [] # sampled dataset
         labels = []  # class labels for the sampled records
+
+        for i in range(n):
+            choice = np.random.randint(len(XX))
+            samples.append(XX[choice][:-1])
+            labels.append(XX[choice][-1])
+
         return (samples, labels)
 
 
@@ -68,8 +74,8 @@ class RandomForest(object):
     def fitting(self):
         # TODO: Train `num_trees` decision trees using the bootstraps datasets
         # and labels by calling the learn function from your DecisionTree class.
-        pass      
-
+        for i in range(self.num_trees):
+            self.decision_trees[i].learn(self.bootstraps_datasets[i], self.bootstraps_labels[i])
 
     def voting(self, X):
         y = []
@@ -79,7 +85,7 @@ class RandomForest(object):
             #   1. Find the set of trees that consider the record as an 
             #      out-of-bag sample.
             #   2. Predict the label using each of the above found trees.
-            #   3. Use majority vote to find the final label for this recod.
+            #   3. Use majority vote to find the final label for this record.
             votes = []
             for i in range(len(self.bootstraps_datasets)):
                 dataset = self.bootstraps_datasets[i]
@@ -88,14 +94,13 @@ class RandomForest(object):
                     effective_vote = OOB_tree.classify(record)
                     votes.append(effective_vote)
 
-
             counts = np.bincount(votes)
             
             if len(counts) == 0:
                 # TODO: Special case 
                 #  Handle the case where the record is not an out-of-bag sample
                 #  for any of the trees. 
-                pass
+                y = np.append(y, np.random.randint(2))
             else:
                 y = np.append(y, np.argmax(counts))
 

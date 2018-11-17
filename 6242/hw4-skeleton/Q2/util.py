@@ -11,8 +11,13 @@ def entropy(class_y):
     #
     # Example:
     #    entropy([0,0,0,1,1,1,1,1,1]) = 0.92
-        
-    entropy = 0
+
+    p1 = np.count_nonzero(np.array(class_y) == 1)/float(len(class_y))
+    p2 = np.count_nonzero(np.array(class_y) == 0)/float(len(class_y))
+    if p1==0 or p2==0:
+        return 0
+
+    entropy = - p1 * np.log2(p1) - p2 * np.log2(p2) 
     return entropy
 
 
@@ -75,13 +80,27 @@ def partition_classes(X, y, split_attribute, split_val):
                [4, 'cc', 32]]                           1]
                
     ''' 
-    
-    X_left = []
-    X_right = []
-    
-    y_left = []
-    y_right = []
-    
+
+    # X, y, split_attribute, split_val
+    X_left, X_right, y_left, y_right = [], [], [], []
+
+    if isinstance(split_val, str):
+        for i in range(len(X)):
+            if X[i][split_attribute] == split_val:
+                X_left.append(X[i])
+                y_left.append(y[i])
+            else:
+                X_right.append(X[i])
+                y_right.append(y[i])
+    else:
+        for i in range(len(X)):
+            if X[i][split_attribute] <= split_val:
+                X_left.append(X[i])
+                y_left.append(y[i])
+            else:
+                X_right.append(X[i])
+                y_right.append(y[i])
+
     return (X_left, X_right, y_left, y_right)
 
     
@@ -104,9 +123,9 @@ def information_gain(previous_y, current_y):
     
     info_gain = 0.45915
     """
-
-    info_gain = 0
-
+    Pl = len(current_y[0])/float(len(previous_y))
+    Pr = len(current_y[1])/float(len(previous_y))
+    info_gain = entropy(previous_y) - Pl * entropy(current_y[0]) - Pr * entropy(current_y[1])
     return info_gain
     
     

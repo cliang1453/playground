@@ -2,47 +2,48 @@
 Q3.1
 
 Linear Regression - 
-	Training Accuracy: 
-	Testing Accuracy: 
+	Training Accuracy: 90%
+	Testing Accuracy: 82%
 
-SVM -
-	Training Accuracy: 
-	Testing Accuracy: 
+SVM - 
+	Training Accuracy: 80%
+	Testing Accuracy: 80%
 
-MLP - 
-	Training Accuracy: 
-	Testing Accuracy: 
+MLP -
+	Training Accuracy: 100%
+	Testing Accuracy: 78%
 
 Random Forest - 
-	Training Accuracy: 
-	Testing Accuracy: 
+	Training Accuracy: 100%
+	Testing Accuracy: 97%
+
 
 ****************************************
 Q3.2 - Hyperparameter tuning
 
 Random Forest - 
-	n_estimators values tested (at least 3): 
+	n_estimators values tested (at least 3): 50, 80, 90, 100, 200, 300
 
-	max_depth values tested (at least 3): 
+	max_depth values tested (at least 3): 70, 80, 90, 100, 110, 120, 130, 150, 200, 300
 		
 	Best combination of parameter values:
-		n_estimators: 
-		max_depth: 
+		n_estimators: 90
+		max_depth: 200
 
-	Testing Accuracy before tuning (default parameters):
-	Testing Accuracy after tuning:
+	Testing Accuracy before tuning (default parameters): 97%
+	Testing Accuracy after tuning: 97%
 
 
 SVM -
 	Kernels values tested: rbf, linear
-	C values tested (at least 3): 
+	C values tested (at least 3): 1e-3, 1e-2, 1e-1, 1, 1e2, 1e3
 		
 	Best combination of parameter values: 
-		Kernel: 
-		C: 
+		Kernel: rbf
+		C: 1e3
 
-	Testing Accuracy before tuning (default parameters):
-	Testing Accuracy after tuning:
+	Testing Accuracy before tuning (default parameters): 80%
+	Testing Accuracy after tuning: 83%
 
 ****************************************
 Q3.3
@@ -50,13 +51,13 @@ Q3.3
 For your SVM's CV run from Q3.2, state the highest mean testing accuracy 
 across the sets of parameter values and its corresponding mean train score and mean fit time. 
 
-SVM's highest mean testing/cross-validated accuracy (best score): 
-SVM's mean train score: 
-SVM's mean fit time: 
+SVM's highest mean testing/cross-validated accuracy (best score): 82%
+SVM's mean train score: 86%
+SVM's mean fit time: 0.17366219
 
 ****************************************
 Q3.4
 
-Best Classifier:
-Why: 
+Best Classifier: Random Forest Classifier (Tuned)
+Why: It achieves the highest test score. Though MLP classifier achieves high training accuracy, it is strongly overfitting, which means the model is too complex for our dataset. SVM and Linear regression does not do well in both training and testing, which means the model is too light for this dataset. All of them only require very little training time without grid search.
 
