@@ -1,0 +1,13 @@
+﻿  hw1.cpp
+hw1.cpp(181): warning C4305: 'argument': truncation from 'double' to 'float'
+hw1.cpp(181): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+hw1.cpp(512): warning C4838: conversion from 'double' to 'float' requires a narrowing conversion
+hw1.cpp(512): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+hw1.cpp(517): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  jpeg.lib(jerror.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
+LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Generating code
+  Finished generating code
+  hw1.vcxproj -> C:\Users\lian4\OneDrive\Documents\Visual Studio 2015\Projects\hw2-starterCode\hw1-starterCode\\Bin\Debug\hw1.exe
+  hw1.vcxproj -> C:\Users\lian4\OneDrive\Documents\Visual Studio 2015\Projects\hw2-starterCode\hw1-starterCode\\Bin\Debug\hw1.pdb (Full PDB)
