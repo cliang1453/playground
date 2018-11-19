@@ -1,2 +1,2 @@
-# computer graphics projects
-USC CSCI420 course projects. Implemented in C++. 
+# CourseProject
+Implemented in C++/OpenGL. Spring2016.
