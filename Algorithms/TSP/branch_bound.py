@@ -104,7 +104,7 @@ def main(argv):
 	if len(argv) != 3:
 		raise ValueError("Usage: python %s <input-dataset-name> <cut-off time(s))>\n" % argv[0])
 	dataset_path, cutoff_time = argv[1:]
-	
+
 	matrix, V = data_loader(dataset_path)
 	parent = Node(parent_matrix=matrix, parent_cost=0)
 	parent_cost = parent.get_total_cost()
@@ -116,9 +116,9 @@ def main(argv):
 		   		result_list=[0], result_dist=0, visited=set([0]))
 	
 	data_writer(result_list=tree.result[1], \
-			    result_dist=tree.result[0], \
-		        instance=os.path.splitext(os.path.basename(dataset_path))[0], \
-		        cutoff=cutoff_time)
+				result_dist=tree.result[0], \
+				instance=os.path.splitext(os.path.basename(dataset_path))[0], \
+				cutoff=cutoff_time)
 
 
 if __name__ == '__main__':
