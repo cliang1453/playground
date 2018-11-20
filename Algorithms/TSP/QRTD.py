@@ -15,7 +15,7 @@ city_dict = {} #(#success out of 10, []*10)
 def main(argv):
 	dataset_path = argv[1:]
 	for f in glob.glob( dataset_path + '*.trace'):
-		city, method, cutoff = f.split("_")
+		city, method, cutoff, roun = f.split("_")
 		cutoff = int(cutoff)
 		if city not in city_dict:
 			city_dict[city] = (0, [math.inf]*10)

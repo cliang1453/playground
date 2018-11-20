@@ -34,7 +34,7 @@ def data_loader(path):
 					if i==j:
 						matrix[i][j] = math.inf
 					else:
-						matrix[i][j] = int(np.linalg.norm(pos_dict[i+1] - pos_dict[j+1]))
+						matrix[i][j] = np.round(np.linalg.norm(pos_dict[i+1] - pos_dict[j+1]))
 
 
 		return np.array(matrix), V
@@ -45,9 +45,9 @@ def data_writer(result_list=None, result_dist=None, time=None, instance=None, cu
 		with open(instance + '_branchbound_' + str(cutoff) + ".sol", 'w') as f:
 			f.write("%d\n"%result_dist)
 			for v in result_list:
-				f.write("%d, "%(v+1))
+				f.write("%d, "%(v))
 	else:
-		with open(instance + '_branchbound_' + str(cutoff) + ".trace", 'w') as f:
+		with open(instance + '_branchbound_' + str(cutoff) + ".trace", 'a') as f:
 			f.write("%f "%time)
 			f.write("%d\n"%result_dist)
             
