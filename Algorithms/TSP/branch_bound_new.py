@@ -91,9 +91,24 @@ def main(argv):
 							time=time.time() - start,\
 							instance=os.path.splitext(os.path.basename(dataset_path))[0], \
 							cutoff=cutoff_time)
-
+			
 		if time.time() - start > cutoff_time:
-			break
+			
+			curr_path = [curr.path.copy()]
+			for v in range(V):
+				if v in curr.path:
+					continue
+				else:
+					curr_path.append(v)
+			curr_sum = get_path_sum(curr_path, matrix)
+
+			data_writer(result_list=curr_path , \
+						result_dist=curr_sum + , \
+						instance=os.path.splitext(os.path.basename(dataset_path))[0], \
+						cutoff=cutoff_time)
+			return 
+
+		
 		for v in range(V):
 			if v in curr.visited:
 				continue
