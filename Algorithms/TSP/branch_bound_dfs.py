@@ -61,6 +61,41 @@ def get_path_sum(path, matrix):
 		
 	return path_sum
 
+class searchTree(object):
+	
+	def __init__(self, args, matrix, V):
+		self.V = V
+		self.matrix = matrix
+		self.min_dist = math.inf
+		self.min_path = []
+		self.args = args
+
+	def search(self, curr):
+
+		if len(curr.path)==self.V:
+			curr_dist = get_path_sum(curr.path, self.matrix)
+			
+			if curr_dist < self.min_dist:
+				self.min_dist = curr_dist
+				self.min_path = curr.path
+				data_writer(result_dist=self.min_dist, \
+							time=time.time() - self.args[0],\
+							instance=os.path.splitext(os.path.basename(self.args[2]))[0], \
+							cutoff=self.args[1])
+
+		if time.time() - self.args[0] > self.args[1]:
+			return
+
+		live = []
+		for v in range(self.V):
+			if v in curr.visited:
+				continue
+			heapq.heappush(live, Node(curr.matrix, curr.get_total_cost(), v, curr.path))
+		
+		while live:
+			next_node = heapq.heappop(live)
+			self.search(next_node)
+
 
 def main(argv): 
 	
@@ -70,63 +105,12 @@ def main(argv):
 	cutoff_time = int(cutoff_time)
 
 	matrix, V = data_loader(dataset_path)
-	print(matrix)
-	live = []
-	heapq.heappush(live, Node(matrix, 0, 0, []))
 	start = time.time()
-	min_sum = math.inf
+	search_tree = searchTree((start, cutoff_time, dataset_path), matrix, V)
+	search_tree.search(Node(matrix, 0, 0, []))
 
-	while live:
-		
-		curr = heapq.heappop(live)
-		# print(curr.visited)
-		# print(curr.get_total_cost())
-
-		if len(curr.path)==V:
-			curr_sum = get_path_sum(curr.path, matrix)
-			if curr_sum < min_sum:
-				min_sum = curr_sum
-				min_path = curr.path
-
-				data_writer(result_dist=min_sum, \
-							time=time.time() - start,\
-							instance=os.path.splitext(os.path.basename(dataset_path))[0], \
-							cutoff=cutoff_time)
-			
-		if time.time() - start > cutoff_time:
-			
-			curr_path = curr.path.copy()
-			for v in range(V):
-				if v in curr.path:
-					continue
-				else:
-					curr_path.append(v)
-			print(curr_path)
-			curr_sum = get_path_sum(curr_path, matrix)
-
-			data_writer(result_list=curr_path,\
-						result_dist=curr_sum,\
-						instance=os.path.splitext(os.path.basename(dataset_path))[0], \
-						cutoff=cutoff_time)
-
-			data_writer(result_dist=curr_sum, \
-							time=time.time() - start,\
-							instance=os.path.splitext(os.path.basename(dataset_path))[0], \
-							cutoff=cutoff_time)
-
-			return 
-
-		
-		for v in range(V):
-			if v in curr.visited:
-				continue
-			heapq.heappush(live, Node(curr.matrix, curr.get_total_cost(), v, curr.path))
-
-		del curr
-
-
-	data_writer(result_list=min_path, \
-				result_dist=min_sum, \
+	data_writer(result_list=search_tree.min_path, \
+				result_dist=search_tree.min_dist, \
 				instance=os.path.splitext(os.path.basename(dataset_path))[0], \
 				cutoff=cutoff_time)
 
