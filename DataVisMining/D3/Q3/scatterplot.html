@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="../lib/d3.v3.min.js"></script>
+        <style type="text/css">
+            
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+            
+            .axis text {
+                font-family: sans-serif;
+                font-size: 11px;
+            }
+
+            .legend {
+                padding: 5px;
+                font: 10px sans-serif;
+                background: yellow;
+                box-shadow: 2px 2px 1px #888;
+            }
+
+            .pagebreak { page-break-before: always; }
+
+
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript">
+            
+            // Set the dimensions of the canvas / graph
+            // Set the dimensions of the canvas / graph
+
+            var pad = 50,
+                right_margin = 200,
+                left_margin = 100,
+                width = 1100 - right_margin - right_margin,
+                height = 600 - pad - pad;
+
+            var circle = d3.svg.symbol().type('circle').size(50);
+            var cross = d3.svg.symbol().type('cross').size(50);
+            var bad_legend = [[left_margin + 2*pad, 1.5*pad]]
+            var good_legend = [[left_margin + 2*pad, 2*pad]]
+                
+            // Adds the svg canvas
+            var chart1 = d3.select("body")
+                        .append("svg")
+                        .attr("width", width + left_margin + right_margin)
+                        .attr("height", height + pad + pad)
+                        .append('g')
+                        .attr('transform','translate('+ 0 +','+ 0 +')');
+
+            imdbRating = []
+            WinsNoms = []
+            d_1_good = []
+            d_1_bad = []
+
+            // Get the data
+            d3.csv("movies.csv", function(error, data) {
+                data.forEach(function(d) {
+                    imdbRating.push(+d.imdbRating);
+                    WinsNoms.push(+d.WinsNoms);
+                    if(d.IsGoodRating == "0"){
+                        d_1_bad.push([+d.imdbRating, +d.WinsNoms]);
+                    }else{
+                        d_1_good.push([+d.imdbRating, +d.WinsNoms]);
+                    }
+                });
+
+                // Scale the range of the data
+                // Set the ranges
+                var x = d3.scale.linear().domain([0, d3.max(imdbRating)]).range([left_margin, left_margin + width]);
+                var y = d3.scale.linear().domain([d3.max(WinsNoms), 0]).range([pad, pad + height]);
+                
+                // Add the valueline path.
+                chart1.selectAll('cross')
+                    .data(d_1_good)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                chart1.selectAll('circle')
+                    .data(d_1_bad)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                
+
+                // Define the axes
+                var xAxis = d3.svg.axis().scale(x)
+                    .orient("bottom").ticks(5);
+
+                var yAxis = d3.svg.axis().scale(y)
+                    .orient("left").ticks(5);
+
+                // Add the X Axis
+                chart1.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height + pad) + ")")
+                    .call(xAxis);
+
+                chart1.append("text")
+                    .attr("transform", "translate(" + (width + left_margin + right_margin/4) + " ," + (height + pad*3/4) + ")")
+                    .style("text-anchor", "middle")
+                    .text("imdb Rating");
+
+                chart1.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + left_margin + ", 0)")
+                    .call(yAxis);
+
+                chart1.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", left_margin + 10)
+                    .attr("x", -pad - height/10 )
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .text("Wins+Norms");
+
+                chart1.append("text")
+                    .attr("x", left_margin + width/2 )
+                    .attr("y",  pad/2)
+                    .style("text-anchor", "middle")
+                    .text("Win+Nominations v.s. IMDb Rating");
+
+
+                chart1.selectAll('cross')
+                    .data(good_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+
+                chart1.selectAll('circle')
+                    .data(bad_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+                      
+                chart1.append("text")
+                      .attr("x", good_legend[0][0] + 15)
+                      .attr("y", good_legend[0][1] + 8)
+                      .text("good rating");
+
+                chart1.append("text")
+                      .attr("x", bad_legend[0][0] + 15)
+                      .attr("y", bad_legend[0][1] + 8)
+                      .text("bad rating");
+
+            });
+
+        </script>
+        <div class="pagebreak"> </div>
+        <script type="text/javascript">
+
+            // Adds the svg canvas
+            var chart2 = d3.select("body")
+                        .append("svg")
+                        .attr("width", width + left_margin + right_margin)
+                        .attr("height", height + pad + pad)
+                        .append('g')
+                        .attr('transform','translate('+ 0 +','+ 0 +')');
+
+            var Budget = []
+            var d_2_good = []
+            var d_2_bad = []
+
+            // Get the data
+            d3.csv("movies.csv", function(error, data) {
+                data.forEach(function(d) {
+                    Budget.push(+d.Budget);
+                    if(d.IsGoodRating == "0"){
+                        d_2_bad.push([+d.imdbRating, +d.Budget]);
+                    }else{
+                        d_2_good.push([+d.imdbRating, +d.Budget]);
+                    }
+                });
+
+                // Scale the range of the data
+                var x = d3.scale.linear().domain([0, d3.max(imdbRating)]).range([left_margin, left_margin + width]);
+                var y = d3.scale.linear().domain([d3.max(Budget), 0]).range([pad, pad + height]);
+
+                chart2.selectAll('cross')
+                    .data(d_2_good)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                chart2.selectAll('circle')
+                    .data(d_2_bad)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                // Define the axes
+                var xAxis = d3.svg.axis().scale(x)
+                    .orient("bottom").ticks(5);
+
+                var yAxis = d3.svg.axis().scale(y)
+                    .orient("left").ticks(5);
+
+                // Add the X Axis
+                chart2.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height+pad) + ")")
+                    .call(xAxis);
+
+                chart2.append("text")
+                    .attr("transform", "translate(" + (width + left_margin + right_margin/4) + " ," + (height + pad*3/4) + ")")
+                    .style("text-anchor", "middle")
+                    .text("imdb Rating");
+
+                chart2.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + left_margin + ", 0)")
+                    .call(yAxis);
+
+                chart2.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", left_margin + 10)
+                    .attr("x", -pad - height/10 )
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .text("Budget");
+
+                chart2.append("text")
+                    .attr("x", left_margin + width/2 )
+                    .attr("y",  pad/2)
+                    .style("text-anchor", "middle")
+                    .text("Budget v.s. IMDb Rating");
+
+                chart2.selectAll('cross')
+                    .data(good_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+
+                chart2.selectAll('circle')
+                    .data(bad_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+                      
+                chart2.append("text")
+                      .attr("x", good_legend[0][0] + 15)
+                      .attr("y", good_legend[0][1] + 8)
+                      .text("good rating");
+
+                chart2.append("text")
+                      .attr("x", bad_legend[0][0] + 15)
+                      .attr("y", bad_legend[0][1] + 8)
+                      .text("bad rating");
+
+            });
+        
+        </script>
+        <div class="pagebreak"> </div>
+        <script type="text/javascript">
+
+            // Adds the svg canvas
+            var chart3 = d3.select("body")
+                        .append("svg")
+                        .attr("width", width + left_margin + right_margin)
+                        .attr("height", height + pad + pad)
+                        .append('g')
+                        .attr('transform','translate('+ 0 +','+ 0 +')');
+
+
+            
+            
+            var d_3_good = []
+            var d_3_bad = []
+            var imdbVotes = []
+
+            // Get the data
+            d3.csv("movies.csv", function(error, data) {
+                data.forEach(function(d) {
+                    imdbVotes.push(+d.imdbVotes);
+                    if(d.IsGoodRating == "0"){
+                        d_3_bad.push([+d.imdbRating, +d.imdbVotes, +d.WinsNoms]);
+                    }else{
+                        d_3_good.push([+d.imdbRating, +d.imdbVotes, +d.WinsNoms]);
+                    }
+                });
+
+                // Scale the range of the data
+                var x = d3.scale.linear().domain([0, d3.max(imdbRating)]).range([left_margin, left_margin + width]);
+                var y = d3.scale.linear().domain([d3.max(imdbVotes), 0]).range([pad, pad + height]);
+                var r = d3.scale.linear().domain([0, d3.max(WinsNoms)]).range([50, 250]);
+
+                var s_circle = d3.svg.symbol().type('circle')
+                           .size(function(d){ return r(d[2]); });
+                var s_cross = d3.svg.symbol().type('cross')
+                              .size(function(d){ return r(d[2]); });
+
+                chart3.selectAll('cross')
+                    .data(d_3_good)
+                    .enter()
+                    .append('path')
+                    .attr('d',s_cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                chart3.selectAll('circle')
+                    .data(d_3_bad)
+                    .enter()
+                    .append('path')
+                    .attr('d',s_circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                // Define the axes
+                var xAxis = d3.svg.axis().scale(x)
+                    .orient("bottom").ticks(5);
+
+                var yAxis = d3.svg.axis().scale(y)
+                    .orient("left").ticks(5);
+
+                // Add the X Axis
+                chart3.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height+pad) + ")")
+                    .call(xAxis);
+
+                chart3.append("text")
+                    .attr("transform", "translate(" + (width + left_margin + right_margin/4) + " ," + (height + pad*3/4) + ")")
+                    .style("text-anchor", "middle")
+                    .text("imdb Rating");
+
+                chart3.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + left_margin + ", 0)")
+                    .call(yAxis);
+
+                chart3.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y",  left_margin + 10)
+                    .attr("x", -pad - height/10 )
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .text("IMDb Votes");
+
+                //title 
+                chart3.append("text")
+                    .attr("x",  left_margin + width/2 )
+                    .attr("y",  pad/2)
+                    .style("text-anchor", "middle")
+                    .text("IMDb Votes v.s. IMDb Rating sized by Wins+Nominations");
+
+                chart3.selectAll('cross')
+                    .data(good_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+
+                chart3.selectAll('circle')
+                    .data(bad_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+                      
+                chart3.append("text")
+                      .attr("x", good_legend[0][0] + 15)
+                      .attr("y", good_legend[0][1] + 8)
+                      .text("good rating");
+
+                chart3.append("text")
+                      .attr("x", bad_legend[0][0] + 15)
+                      .attr("y", bad_legend[0][1] + 8)
+                      .text("bad rating");
+
+            });
+        
+        </script>
+        <div class="pagebreak"> </div>
+        <script type="text/javascript">
+
+            // Adds the svg canvas
+            var chart4 = d3.select("body")
+                        .append("svg")
+                        .attr("width", width + left_margin + right_margin)
+                        .attr("height", height + pad + pad)
+                        .append('g')
+                        .attr('transform','translate('+ 0 +','+ 0 +')');
+
+            // Get the data
+            d3.csv("movies.csv", function(error, data) {
+                // Set the ranges
+                var x = d3.scale.linear().domain([0, d3.max(imdbRating)]).range([left_margin, left_margin + width]);
+                var y = d3.scale.sqrt().domain([d3.max(WinsNoms), 0]).range([pad, pad + height]);
+                
+                // Add the valueline path.
+                chart4.selectAll('cross')
+                    .data(d_1_good)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                chart4.selectAll('circle')
+                    .data(d_1_bad)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+x(d[0])+","+y(d[1])+")"; });
+
+                
+
+                // Define the axes
+                var xAxis = d3.svg.axis().scale(x)
+                    .orient("bottom").ticks(5);
+
+                var yAxis = d3.svg.axis().scale(y)
+                    .orient("left").ticks(5);
+
+
+
+                // Add the X Axis
+                chart4.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height + pad) + ")")
+                    .call(xAxis);
+
+                chart4.append("text")
+                    .attr("transform", "translate(" + (width + left_margin + right_margin/4) + " ," + (height + pad*3/4) + ")")
+                    .style("text-anchor", "middle")
+                    .text("imdb Rating");
+
+                chart4.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + left_margin + ", 0)")
+                    .call(yAxis);
+
+                chart4.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", left_margin + 10)
+                    .attr("x", -pad - height/10 )
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .text("Wins+Norms");
+
+                chart4.append("text")
+                    .attr("x", left_margin + width/2 )
+                    .attr("y",  pad/2)
+                    .style("text-anchor", "middle")
+                    .text("Win+Nominations(square-root-scaled) v.s. IMDb Rating");
+
+
+                chart4.selectAll('cross')
+                    .data(good_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+
+                chart4.selectAll('circle')
+                    .data(bad_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+                      
+                chart4.append("text")
+                      .attr("x", good_legend[0][0] + 15)
+                      .attr("y", good_legend[0][1] + 8)
+                      .text("good rating");
+
+                chart4.append("text")
+                      .attr("x", bad_legend[0][0] + 15)
+                      .attr("y", bad_legend[0][1] + 8)
+                      .text("bad rating");
+
+            });
+
+            </script>
+            <div class="pagebreak"> </div>
+            <script type="text/javascript">
+
+
+            // Adds the svg canvas
+            var chart5 = d3.select("body")
+                        .append("svg")
+                        .attr("width", width + left_margin + right_margin)
+                        .attr("height", height + pad + pad)
+                        .append('g')
+                        .attr('transform','translate('+ 0 +','+ 0 +')');
+
+            // Get the data
+            d3.csv("movies.csv", function(error, data) {
+                // Set the ranges
+                var x = d3.scale.linear().domain([0, d3.max(imdbRating)]).range([left_margin, left_margin + width]);
+                var y = d3.scale.log().domain([d3.max(WinsNoms), 1]).range([pad, pad+height]);
+                
+                // Add the valueline path.
+                chart5.selectAll('cross')
+                    .data(d_1_good)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ 
+                        if (d[1] < 1){ return "translate("+x(d[0])+","+(height + pad)+")";}
+                        else {return "translate("+x(d[0])+","+y(d[1])+")"; }; });
+
+                chart5.selectAll('circle')
+                    .data(d_1_bad)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ 
+                        if (d[1] < 1){ return "translate("+x(d[0])+","+(height + pad)+")";}
+                        else {return "translate("+x(d[0])+","+y(d[1])+")"; }; });
+
+                
+
+                // Define the axes
+                var xAxis = d3.svg.axis().scale(x)
+                    .orient("bottom").ticks(5);
+
+                var yAxis = d3.svg.axis().scale(y)
+                    .orient("left").ticks(5);
+
+
+
+                // Add the X Axis
+                chart5.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height + pad) + ")")
+                    .call(xAxis);
+
+                chart5.append("text")
+                    .attr("transform", "translate(" + (width + left_margin + right_margin/4) + " ," + (height + pad*3/4) + ")")
+                    .style("text-anchor", "middle")
+                    .text("imdb Rating");
+
+                chart5.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + left_margin + ", 0)")
+                    .call(yAxis);
+
+                chart5.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", left_margin + 10)
+                    .attr("x", -pad - height/10 )
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .text("Wins+Norms");
+
+                chart5.append("text")
+                    .attr("x", left_margin + width/2 )
+                    .attr("y",  pad/2)
+                    .style("text-anchor", "middle")
+                    .text("Win+Nominations(log-scaled) v.s. IMDb Rating");
+
+
+                chart5.selectAll('cross')
+                    .data(good_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',cross)
+                    .attr('fill','white')
+                    .attr('stroke','blue')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+
+                chart5.selectAll('circle')
+                    .data(bad_legend)
+                    .enter()
+                    .append('path')
+                    .attr('d',circle)
+                    .attr('fill','white')
+                    .attr('stroke','red')
+                    .attr('stroke-width',1)
+                    .attr('transform',function(d,i){ return "translate("+d[0]+","+d[1]+")"; });
+                      
+                chart5.append("text")
+                      .attr("x", good_legend[0][0] + 15)
+                      .attr("y", good_legend[0][1] + 8)
+                      .text("good rating");
+
+                chart5.append("text")
+                      .attr("x", bad_legend[0][0] + 15)
+                      .attr("y", bad_legend[0][1] + 8)
+                      .text("bad rating");
+
+            });
+
+        </script>
+    </body>
+</html>

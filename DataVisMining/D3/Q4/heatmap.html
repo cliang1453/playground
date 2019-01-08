@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+    <style>
+        rect {
+                stroke: #E6E6E6;
+                stroke-width: 4px;
+              }
+
+        .axis text {
+          font-size: 17px;
+          font-family: Cursive;
+          fill: #000;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: none;
+        }
+
+        .l_tex{
+          font-family: Cursive;
+        }
+
+        #chart {
+          width: 100%;
+          height: 100%;
+          min-width: 500px;
+          min-height: 500px;
+        }
+
+        .select {
+            position: absolute;
+            width: 150px;
+            top:100px;
+            left:450px;
+        }
+
+    </style>
+    <head><script src="../lib/d3.v3.min.js" charset="utf-8"></script></head>
+    <body>
+        <svg id="chart"></svg>
+        <script type="text/javascript">
+
+          var margin = { top: 100, right: 200, bottom: 200, left: 200 },
+              
+              width = 1040 - margin.left - margin.right,
+              height = 860 - margin.top - margin.bottom,
+              gridSize = 80;
+
+          // Create the svg canvas
+          var svg = d3.select("#chart")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+              .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+          var y_names = [ 'Deathly Hallows','Half Blood Prince', 'Order of the Phoenix', 
+                          'Goblet of Fire', 'Prisoner of Azkaban','Chamber of Secrets', "Sorcerer's Stone"];
+          
+          var x_names = ["Charm", "Conjuration", "Counter Spell", "Curse", 
+                         "Healing Spell", "Hex", "Jinx", "Transfiguration"];
+
+          var spell_set = {"Charm": 0, "Conjuration": 1, "Counter Spell": 2, "Curse": 3, 
+                           "Healing Spell": 4, "Hex": 5, "Jinx": 6, "Transfiguration": 7};
+
+          var yScale = d3.scale.ordinal().domain(y_names).rangeBands([margin.top + height, margin.top]);
+          var yAxis = d3.svg.axis().orient("left").scale(yScale);
+          var xScale = d3.scale.ordinal().domain(x_names).rangeBands([margin.left, margin.left + width]);
+          var xAxis = d3.svg.axis().orient("bottom").scale(xScale);
+
+          //options 
+          var data = ["Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"];
+          var select = d3.select('body')
+                         .append('select')
+                         .attr('class','select') 
+                         .on('change', onchange)
+                         .property("selected", function(d){ return d === "Gryffindor"; });
+
+          var options = select.selectAll('option')
+                              .data(data).enter()
+                              .append('option')
+                              .text(function (d) { return d; });
+
+
+          update("Gryffindor")
+
+          // Add the horizontal labels
+          svg.append("g")
+              .attr("class", "axis")
+              .attr("transform", "translate(0," + (margin.top + height + 80)  + ")")
+              .call(xAxis)
+              .selectAll("text")  
+                  .style("text-anchor", "end")
+                  .attr("dx", "-.8em")
+                  .attr("dy", ".15em")
+                  .attr("transform", function(d) {
+                      return "rotate(-90)" 
+                      });
+
+          svg.append("text")
+              .attr("transform", "translate(" + (margin.left+width + 80) + "," + (margin.top + height + 80)  + ")")
+              .style("font-family", "Cursive")
+              .style("text-anchor", "middle")
+              .attr('font-weight', 'bold')
+              .text("Spell Type")
+
+          // Add the vertical labels
+          svg.append("g")
+                .attr("class", "axis")
+                .call(yAxis)
+                .attr("transform", "translate(" + margin.left + "," + margin.top*3/4 + " )")
+                .selectAll("text")
+                .style("text-anchor", "end");
+
+          svg.append("text")
+              .attr("transform", "translate(" +  margin.left + "," + margin.top*3/2+ ")")
+              .style("font-family", "Cursive")
+              .style("text-anchor", "middle")
+              .attr('font-weight', 'bold')
+              .text("Book")
+          
+
+          function onchange() {
+              selectValue = d3.select('select').property('value');
+              update(selectValue);
+          };
+
+          function update(selectValue){
+
+                var grid_set = []
+                var count = []
+                
+                d3.csv("heatmap.csv", function(error, data){
+                    data.forEach(function(d) {
+                        if (d.House == selectValue){
+                            for(i=0; i<7; i++)
+                            {
+                              count.push(+d[y_names[i]]);
+                              grid_set.push([ spell_set[d.SpellType], i, +d[y_names[i]]]);
+                            }
+                        }
+                    });
+
+                    var color = d3.scale.quantize()
+                                .domain([d3.min(count), d3.max(count)])
+                                .range(['#f7fcf0','#e0f3db','#ccebc5','#a8ddb5','#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081']);
+
+                    svg.selectAll(".count").remove();
+                    // Create the heatmap visualization
+                    var viz = svg.selectAll(".count")
+                                .data(grid_set)
+                                .enter().append("rect")
+                                    .attr("class", "count")
+                                    .attr("x", function(d, i) {return margin.left + gridSize * d[0]; })
+                                    .attr("y", function(d, i) {return margin.top + gridSize * (7-d[1]); })
+                                    .attr("width",gridSize)
+                                    .attr("height", gridSize)
+                                    .style("fill", function(d){return color(d[2]) ; });
+
+                    svg.selectAll(".legend").remove();
+                    svg.selectAll(".l_tex").remove();
+                    
+                    var legend = svg.selectAll(".legend")
+                          .data(color.range());
+
+                    legend.enter().append("rect")
+                        .attr("width", 30)
+                        .attr("height", 50)
+                        .style("fill", function(d){return d})
+                        .attr("transform", function(d, i) { 
+                          return "translate(" + (margin.left + width + 50) + "," + (margin.top + 80 + i * 50) + ")";});
+
+                    legend.enter().append("text")
+                          .attr("class", "l_tex")
+                          .text(function(d) { var r = color.invertExtent(d); return Math.floor(r[0]);})
+                          .attr("transform", function(d, i) { 
+                            return "translate(" + (margin.left + width + 90) + "," + (margin.top + 90 + i * 50) + ")";});
+
+                    legend.enter().append("text")
+                          .attr("class", "l_tex")
+                          .text("No. of Spells")
+                          .attr('font-weight', 'bold')
+                          .attr("transform", "translate(" + (margin.left + width + 50) + "," + (margin.top + 50) + ")");
+
+                });
+          };
+
+
+        </script>
+    </body>
+</html>

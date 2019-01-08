@@ -1,0 +1,132 @@
+chen@chen:~/Documents/playground/6242/hw3-skeleton/Q4$ az login
+Note, we have launched a browser for you to login. For old experience with device code, use "az login --use-device-code"
+[9915:9955:1021/190436.971179:ERROR:browser_gpu_channel_host_factory.cc(108)] Failed to launch GPU process.
+Created new window in existing browser session.
+You have logged in. Now let us find all the subscriptions to which you have access...
+[
+  {
+    "cloudName": "AzureCloud",
+    "id": "ec634d56-701c-496c-8a98-f7367c3c45df",
+    "isDefault": true,
+    "name": "Microsoft Azure Sponsorship 2",
+    "state": "Enabled",
+    "tenantId": "482198bb-ae7b-4b25-8b7a-6d7f32faa083",
+    "user": {
+      "name": "cliang73@gatech.edu",
+      "type": "user"
+    }
+  }
+]
+
+
+chen@chen:~/Documents/playground/6242/hw3-skeleton/Q4$ az storage account list
+[
+  {
+    "accessTier": null,
+    "creationTime": "2018-10-21T22:58:36.600017+00:00",
+    "customDomain": null,
+    "enableHttpsTrafficOnly": false,
+    "encryption": {
+      "keySource": "Microsoft.Storage",
+      "keyVaultProperties": null,
+      "services": {
+        "blob": {
+          "enabled": true,
+          "lastEnabledTime": "2018-10-21T22:58:36.709375+00:00"
+        },
+        "file": {
+          "enabled": true,
+          "lastEnabledTime": "2018-10-21T22:58:36.709375+00:00"
+        },
+        "queue": null,
+        "table": null
+      }
+    },
+    "id": "/subscriptions/ec634d56-701c-496c-8a98-f7367c3c45df/resourceGroups/myresourcegrp/providers/Microsoft.Storage/storageAccounts/q4storageeastus",
+    "identity": null,
+    "isHnsEnabled": null,
+    "kind": "Storage",
+    "lastGeoFailoverTime": null,
+    "location": "eastus2",
+    "name": "q4storageeastus",
+    "networkRuleSet": {
+      "bypass": "AzureServices",
+      "defaultAction": "Allow",
+      "ipRules": [],
+      "virtualNetworkRules": []
+    },
+    "primaryEndpoints": {
+      "blob": "https://q4storageeastus.blob.core.windows.net/",
+      "dfs": null,
+      "file": "https://q4storageeastus.file.core.windows.net/",
+      "queue": "https://q4storageeastus.queue.core.windows.net/",
+      "table": "https://q4storageeastus.table.core.windows.net/",
+      "web": null
+    },
+    "primaryLocation": "eastus2",
+    "provisioningState": "Succeeded",
+    "resourceGroup": "myresourcegrp",
+    "secondaryEndpoints": null,
+    "secondaryLocation": null,
+    "sku": {
+      "capabilities": null,
+      "kind": null,
+      "locations": null,
+      "name": "Standard_LRS",
+      "resourceType": null,
+      "restrictions": null,
+      "tier": "Standard"
+    },
+    "statusOfPrimary": "available",
+    "statusOfSecondary": null,
+    "tags": {},
+    "type": "Microsoft.Storage/storageAccounts"
+  }
+]
+
+
+chen@chen:~/Documents/playground/6242/hw3-skeleton/Q4$ az storage account keys list --account-name q4storageeastus --resource-group myresourcegrp
+[
+  {
+    "keyName": "key1",
+    "permissions": "Full",
+    "value": "ETRzvJikKskwQaArfirNPIYBE1ApbaABl3V5qbD46s7bacl1yqNR0jLsAfs7P/2swt5cViK77Hk/DltmpezJrA=="
+  },
+  {
+    "keyName": "key2",
+    "permissions": "Full",
+    "value": "5ISntUarCse0NwsKJCVG7n+npf+QHMHIzqUarDmETndEoJwuppEM+QGVnOOwgLd9352UPvNBaULzceELIiCTjQ=="
+  }
+]
+
+chen@chen:~/Documents/playground/6242/hw3-skeleton/Q4$ az storage container list --account-name q4storageeastus --account-key ETRzvJikKskwQaArfirNPIYBE1ApbaABl3V5qbD46s7bacl1yqNR0jLsAfs7P/2swt5cViK77Hk/DltmpezJrA==
+[
+  {
+    "metadata": null,
+    "name": "myq4cluster-2018-10-21t22-51-41-003z",
+    "properties": {
+      "etag": "\"0x8D637AA3FCD68E5\"",
+      "hasImmutabilityPolicy": "false",
+      "hasLegalHold": "false",
+      "lastModified": "2018-10-21T23:09:27+00:00",
+      "lease": {
+        "duration": null,
+        "state": null,
+        "status": null
+      },
+      "leaseDuration": null,
+      "leaseState": "available",
+      "leaseStatus": "unlocked",
+      "publicAccess": null
+    }
+  }
+]
+
+
+
+
+container-name: myq4cluster-2018-10-21t22-51-41-003z
+small-blob-name: myq4cluster-container
+blob-storage-name: q4storageeastus
+
+yarn jar q4-1.0.jar edu.gatech.cse6242.Q4 wasbs://myq4cluster-2018-10-21t22-51-41-003z@q4storageeastus.blob.core.windows.net/myq4cluster-container/small.tsv wasbs://myq4cluster-2018-10-21t22-51-41-003z@q4storageeastus.blob.core.windows.net/smalloutput

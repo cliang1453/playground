@@ -1,0 +1,3 @@
+By comparing two plots, we can observe that the Wins+Nominations vs. IMDb Rating is better at clustering good and bad rating movies. The boundary between good and bad data clusters can be traced clearly. 
+
+The data points may have very similar values and form clusters in chart. We use square root scale and log scale to enlarge the difference between similar values, and effectively separate them for better visualization. 
