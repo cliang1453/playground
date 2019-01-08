@@ -1,1 +1,1 @@
-CSCI420@USC, 2016 Spring.
+Spring 2016.
