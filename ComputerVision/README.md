@@ -1,1 +1,1 @@
-EE569@USC Spring 2016
+Spring 2016
