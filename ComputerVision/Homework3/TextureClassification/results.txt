@@ -1,0 +1,44 @@
+Using Euclidean Distance
+======================================================================================================
+
+Unsupervised Training Stage 
+==========================================================================
+The Unsupervised Training Result of 25-D Feature Vector =
+4 10 1 7
+5 11 2 8
+6 12 3 9
+
+The Unsupervised Training Result of 3-D Feature Vector =
+4 10 1 7
+5 11 2 8
+6 12 3 9
+
+
+Unsupervised Testing Stage
+==========================================================================
+1=A; 2=B; C=3; D=4; E=5; F=6
+The Unsupervised Testing Result of 25-D Feature Vector =
+1 5 3 2
+4 0 0 6
+
+The Unsupervised Testing Result of 3-D Feature Vector =
+1 5 3 2
+4 0 0 6
+
+
+Supervised Testing Stage
+==========================================================================
+1=A; 2=B; C=3; D=4; E=5; F=6
+The Supervised Testing Result of 25-D Feature Vector =
+1 5 3 2
+4 0 0 6
+
+
+Using Manhattan Distance
+======================================================================================================
+1=A; 2=B; C=3; D=4; E=5; F=6
+The Supervised Testing Result of 25-D Feature Vector =
+3 1 0 2
+4 0 0 5
+0 0 0 6
+

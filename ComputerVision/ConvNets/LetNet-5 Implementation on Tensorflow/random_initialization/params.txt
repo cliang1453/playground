@@ -1,0 +1,56 @@
+Experiment 1
+
+# Constants describing the training process.
+MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
+NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+tf.truncated_normal_initializer(stddev=stddev, dtype=dtype))
+batch_size = 128
+max_steps = 100000 
+
+
+Experiment 2
+
+# Constants describing the training process.
+MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
+NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.2       # Initial learning rate.
+tf.truncated_normal_initializer(stddev=stddev, dtype=dtype))
+batch_size = 128
+max_steps = 100000 
+
+
+Experiment 3
+
+# Constants describing the training process.
+MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
+NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+tf.truncated_normal_initializer(stddev=stddev, dtype=dtype))
+batch_size = 64
+max_steps = 50000
+
+Experiment 4
+
+# Constants describing the training process.
+MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
+NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+tf.xavier_normal_initializer(stddev=stddev, dtype=dtype))
+batch_size = 64
+max_steps = 50000
+
+Experiment 5
+
+# Constants describing the training process.
+MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
+NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+tf.xavier_normal_initializer(stddev=stddev, dtype=dtype))
+batch_size = 64
+max_steps = 100000
