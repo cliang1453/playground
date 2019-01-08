@@ -1,1 +1,1 @@
-CSCI599@USC, Fall 2017
+Fall 2017.
