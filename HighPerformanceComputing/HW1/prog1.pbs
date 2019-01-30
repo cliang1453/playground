@@ -1,0 +1,15 @@
+#PBS -N prog1
+#PBS -l nodes=2:ppn=8
+#PBS -l walltime=00:10:00
+#PBS -q coc-ice-multi
+#PBS -o prog1.out
+#PBS -m abe
+#PBS -M cliang73@gatech.edu
+cd /nv/coc-ice/cliang73/playground/HighPerformanceComputing/HW1/
+module load gcc mvapich2/2.2
+make all
+mpirun -np 1 ./prog1 5000000 10
+mpirun -np 2 ./prog1 5000000 10
+mpirun -np 4 ./prog1 5000000 10
+mpirun -np 8 ./prog1 5000000 10
+mpirun -np 16 ./prog1 5000000 10
