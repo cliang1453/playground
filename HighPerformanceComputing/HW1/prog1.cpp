@@ -56,12 +56,12 @@ int main(int argc, char *argv[])
 	int N = atoi(argv[1]);
 	int R = atoi(argv[2]);
 	int m = 0;
-	clock_t begin = clock();
 	vector<int> sum(R, 0);
 	vector<double> pi(R, 0);
 	
 	// set up MPI
 	MPI_Init(&argc, &argv);
+	clock_t begin = MPI_Wtime();
 
 	// get communicator size and my rank
 	MPI_Comm comm = MPI_COMM_WORLD;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 		}
 		P = P/R;
 
-		clock_t end = clock();
+		clock_t end = MPI_Wtime();
 		data_writer(p, N, R, P, end-begin);
 	}
 
