@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
 	
 	// set up MPI
 	MPI_Init(&argc, &argv);
-	clock_t begin = MPI_Wtime();
 
 	// get communicator size and my rank
 	MPI_Comm comm = MPI_COMM_WORLD;
@@ -74,7 +73,7 @@ int main(int argc, char *argv[])
 	MPI_Bcast(&x, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	srand (time(NULL));
 	srand(rank+1);
-
+	double begin = MPI_Wtime();
 
 	for (int i = 0; i < R; ++i)
 	{
@@ -89,7 +88,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
 	if(rank == 0)
 	{
 		double P = 0;
@@ -99,7 +97,7 @@ int main(int argc, char *argv[])
 		}
 		P = P/R;
 
-		clock_t end = MPI_Wtime();
+		double end = MPI_Wtime();
 		data_writer(p, N, R, P, end-begin);
 	}
 
