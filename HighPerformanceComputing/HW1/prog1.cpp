@@ -11,21 +11,24 @@
 using namespace std;
 
 #define PI 3.14159265
-const double r = 1000.0;
+const double r = 1.0;
 
 int dboard(int N, int rank)
 {
 	double a, theta, x, y;
 	int M = 0;
-	default_random_engine generator;
+	// default_random_engine generator;
+	// uniform_real_distribution<double> a_dist(0.0, r*r);
+	// uniform_real_distribution<double> theta_dist(0.0, 360.0);
 
 	for (int i = 0; i < N; ++i)
 	{
 		//Throw darts at dartboard
-		uniform_real_distribution<double> a_dist(0.0, r*r);
-		uniform_real_distribution<double> theta_dist(0.0, 360.0);
-		a = a_dist(generator);  // generates number in the range 1..6 
-		theta = theta_dist(generator);
+		// a = a_dist(generator);  
+		// theta = theta_dist(generator);
+		a = r*r*rand()/RAND_MAX;
+		theta = 360.0*rand()/RAND_MAX;
+
 
 		//Generate random numbers for X and Y coordinates
 		x = sqrt(a) * cos(theta * PI / 180.0);
@@ -78,8 +81,6 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < R; ++i)
 	{
 		m = dboard(x, rank); 
-
-		MPI_Barrier(MPI_COMM_WORLD);
 		MPI_Reduce(&m, &sum[i], 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 		if (rank == 0)

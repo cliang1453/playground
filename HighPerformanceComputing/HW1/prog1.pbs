@@ -1,6 +1,6 @@
 #PBS -N prog1
 #PBS -l nodes=2:ppn=8
-#PBS -l walltime=00:10:00
+#PBS -l walltime=00:15:00
 #PBS -q coc-ice-multi
 #PBS -o prog1.out
 #PBS -m abe
@@ -13,3 +13,8 @@ mpirun -np 2 ./prog1 5000000 10
 mpirun -np 4 ./prog1 5000000 10
 mpirun -np 8 ./prog1 5000000 10
 mpirun -np 16 ./prog1 5000000 10
+mpirun -np 8 ./prog1 5000000 10
+mpirun -np 8 ./prog1 10000000 10
+mpirun -np 8 ./prog1 15000000 10
+mpirun -np 8 ./prog1 20000000 10
+mpirun -np 8 ./prog1 25000000 10
