@@ -113,8 +113,10 @@ reward.input_multipliers = ones(4,1)*0;
 
 Ps = zeros(length(reward.state_multipliers));
 
-nominal_state = target_hover_state; nominal_inputs = zeros(4,1);
-target_state_time_t = target_hover_state; target_state_time_tplus1 = target_hover_state;
+nominal_state = target_hover_state; 
+nominal_inputs = zeros(4,1);
+target_state_time_t = target_hover_state; 
+target_state_time_tplus1 = target_hover_state;
 magic_factor = 0;
 model_bias = zeros(6,1);
 simulate_f = @f_heli;
@@ -126,11 +128,12 @@ simulate_f = @f_heli;
 Q = diag(reward.state_multipliers) * dt;
 R = diag(reward.input_multipliers) * dt;
 
-num_steps = % make sure it is sufficient for K to have converged
-for i=1:num_steps
-	K{i} = 
 
-	Ps = 
+num_steps = 100;% make sure it is sufficient for K to have converged
+Ps = Q
+for i=1:num_steps
+	K{i} = -1 * inv(R + B.' * Ps * B) * B.' * Ps * A;
+	Ps = Q + K{i}.' * R * K{i} + (A + B * K{i}).' * Ps * (A + B * K{i});
 end
 
 figure; hold on;
@@ -146,10 +149,12 @@ end
 K_ss = K{num_steps}; % the steady state (infinite horizon) feedback matrix
 
 
+%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% sanity check in simulation without noise:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% sanity check in simulation without noise:
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 x(:,1) = target_hover_state;
 for t=1:H
@@ -163,9 +168,9 @@ figure; plot(x(idx.ned,:)'); legend('north', 'east', 'down'); title('K_{ss} hove
 figure; plot(x(idx.q,:)'); legend('qx', 'qy', 'qz', 'qw'); title('K_{ss} hover');
 figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective'); title('K_{ss} hover');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% simulate with noise:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% simulate with noise:
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 x(:,1) = target_hover_state;
 for t=1:H
 	% control law:
@@ -228,30 +233,30 @@ figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective
 %% controller perform well---the clipping distance maxes out errors at that
 %% value.  Hand in: plot of ned + the clipping distance you picked.  
 
-start_ned = [10000; 0; 0];
-rotation_axis = [0; 0; 1];
-rotation_angle = 0; % radians
-start_q = [sin(rotation_angle/2)*rotation_axis; cos(rotation_angle/2)];
+% start_ned = [10000; 0; 0];
+% rotation_axis = [0; 0; 1];
+% rotation_angle = 0; % radians
+% start_q = [sin(rotation_angle/2)*rotation_axis; cos(rotation_angle/2)];
 
-start_state = target_hover_state;
-start_state(idx.ned) = start_ned;
-start_state(idx.q) = start_q;
+% start_state = target_hover_state;
+% start_state(idx.ned) = start_ned;
+% start_state(idx.q) = start_q;
 
 
-clipping_distance =  %% your pick
-x(:,1) = start_state;
-for t=1:H
-	% control law:
-	dx = compute_dx(target_hover_state, x(:,t));
-	dx(idx.ned) = max(min(dx(idx.ned), clipping_distance),-clipping_distance);
-	delta_u = K_ss*dx;
-	% simulate:
-	noise_F_T = randn(6,1)*1;
-	x(:,t+1) = f_heli(x(:,t), delta_u, dt, model, idx, noise_F_T);
-end
-figure; plot(x(idx.ned,:)'); legend('north', 'east', 'down'); title('K_{ss} hover with perturbed initial state and clipping');
-figure; plot(x(idx.q,:)'); legend('qx', 'qy', 'qz', 'qw'); title('K_{ss} hover with perturbed initial state and clipping');
-figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective'); title('K_{ss} hover with perturbed initial state and clipping');
+% clipping_distance =  %% your pick
+% x(:,1) = start_state;
+% for t=1:H
+% 	% control law:
+% 	dx = compute_dx(target_hover_state, x(:,t));
+% 	dx(idx.ned) = max(min(dx(idx.ned), clipping_distance),-clipping_distance);
+% 	delta_u = K_ss*dx;
+% 	% simulate:
+% 	noise_F_T = randn(6,1)*1;
+% 	x(:,t+1) = f_heli(x(:,t), delta_u, dt, model, idx, noise_F_T);
+% end
+% figure; plot(x(idx.ned,:)'); legend('north', 'east', 'down'); title('K_{ss} hover with perturbed initial state and clipping');
+% figure; plot(x(idx.q,:)'); legend('qx', 'qy', 'qz', 'qw'); title('K_{ss} hover with perturbed initial state and clipping');
+% figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective'); title('K_{ss} hover with perturbed initial state and clipping');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -262,35 +267,35 @@ figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective
 %% find out the smallest (discrete) latency that makes the controller
 %% perform poorly; hand in plot of q(uaternion) and u_prev + the latency value
 
-latency = %% your pick
-for i=1:latency+1
-	x(:,i) = target_hover_state;
-end
+% latency = %% your pick
+% for i=1:latency+1
+% 	x(:,i) = target_hover_state;
+% end
 
-for t=latency+1:H
-	% control law:
-	dx = compute_dx(target_hover_state, x(:,t-latency));
-	delta_u = K_ss* dx;
-	% simulate:
-	noise_F_T = randn(6,1)*1;
-	x(:,t+1) = f_heli(x(:,t), delta_u, dt, model, idx, noise_F_T);
-end
-figure; plot(x(idx.ned,:)'); legend('north', 'east', 'down'); title('K_{ss} hover with latency');
-figure; plot(x(idx.q,:)'); legend('qx', 'qy', 'qz', 'qw'); title('K_{ss} hover with latency');
-figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective'); title('K_{ss} hover with latency');
+% for t=latency+1:H
+% 	% control law:
+% 	dx = compute_dx(target_hover_state, x(:,t-latency));
+% 	delta_u = K_ss* dx;
+% 	% simulate:
+% 	noise_F_T = randn(6,1)*1;
+% 	x(:,t+1) = f_heli(x(:,t), delta_u, dt, model, idx, noise_F_T);
+% end
+% figure; plot(x(idx.ned,:)'); legend('north', 'east', 'down'); title('K_{ss} hover with latency');
+% figure; plot(x(idx.q,:)'); legend('qx', 'qy', 'qz', 'qw'); title('K_{ss} hover with latency');
+% figure; plot(x(idx.u_prev,:)'); legend('aileron','elevator','rudder','collective'); title('K_{ss} hover with latency');
 
-%% Q1g: Build a controller about the hover 
-%% configuration by performing search 
-%% over a space of policies. Use the 'real' non-linear model, not linearized dynamics.  
-%% We suggest starting with a simple linear controller class, but you might
-%% consider somewhat more sophisticated ones then that.
+% %% Q1g: Build a controller about the hover 
+% %% configuration by performing search 
+% %% over a space of policies. Use the 'real' non-linear model, not linearized dynamics.  
+% %% We suggest starting with a simple linear controller class, but you might
+% %% consider somewhat more sophisticated ones then that.
 
-%% Q1h: Build the same controller as above but now build it using the latency described above. Can you build a linear
-%% controller more robust to various latencies then the LQR one? Plot the range of latencies for which the LQR and
-%% policy search controller can stabilize the helicopter.
-
-
+% %% Q1h: Build the same controller as above but now build it using the latency described above. Can you build a linear
+% %% controller more robust to various latencies then the LQR one? Plot the range of latencies for which the LQR and
+% %% policy search controller can stabilize the helicopter.
 
 
 
-end
+
+
+% end
