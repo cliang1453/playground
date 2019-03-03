@@ -10,7 +10,7 @@ bool is_valid(std::vector<int> curr, int curr_row, int curr_col, unsigned int k)
 std::vector<int> search_step(unsigned int n, unsigned int k);
 
 // Start from current node at level k (current partial solution) to next node at level k (next partial solution) in in-order-traversal order
-bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, int col);
+bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, unsigned int col);
 
 // Explore all leaf nodes at level n (full solutions) starting from the current node at level k (current partial solution)
 void search_full(std::vector<std::vector<unsigned int> >& sols, std::vector<int>& curr, unsigned int n, unsigned int col);
@@ -29,8 +29,8 @@ void nqueen_master(	unsigned int n,
 					std::vector<std::vector<unsigned int> >& all_solns) {
 
 
-	unsigned int num_procs;
-	unsigned int num_sol;
+	int num_procs;
+	int num_sol;
 	MPI_Status stat;
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 	bool is_found = false;
@@ -45,9 +45,10 @@ void nqueen_master(	unsigned int n,
 			is_found = search_partial(n, k, curr, k-1);
 		
 		if (!is_found) break;
+
 		// send partial solution to a worker (vector<int>)
 		std::vector<int> partial_sol = curr;
-		MPI_Send( partial_sol[0], k, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD);
+		MPI_Send( &partial_sol[0], k, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD);
 	}
 
 
@@ -57,19 +58,20 @@ void nqueen_master(	unsigned int n,
 		// receive completed work from a worker processor (unsigned int[][])
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
 		MPI_Get_count(&stat, MPI_UNSIGNED, &num_sol);
+		unsigned int** sol_list;
 
 		if (num_sol != MPI_UNDEFINED)
 		{
-			unsigned int** sol_list = new unsigned int*[num_sol];
+			sol_list = new unsigned int*[num_sol];
 			for(int i = 0; i < num_sol; ++i) 
 				sol_list[i] = new unsigned int[n];
 		}
 		
-		MPI_Recv( &(sol_list[0][0]), num_sol*n, MPI_UNSIGNED, stat.SOURCE, stat.TAG, MPI_COMM_WORLD, &stat);
+		MPI_Recv( &(sol_list[0][0]), num_sol*n, MPI_UNSIGNED, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD, &stat);
 	    
 		// store the received sol_list (unsigned int[][]) in all_solns (vector<vector<unsigned int>>)
 		for (int i = 0; i < num_sol; ++i){
-			for (int j = 0; j < n; ++j) 
+			for (unsigned int j = 0; j < n; ++j) 
 				all_solns[i].push_back(sol_list[i][j]);
 		}
 		delete sol_list;
@@ -82,7 +84,7 @@ void nqueen_master(	unsigned int n,
 
 		// send partial solution to the word that responded
 		std::vector<int> partial_sol = curr;
-		MPI_Send( partial_sol[0], k, MPI_INT, stat.MPI_SOURCE, stat.TAG, MPI_COMM_WORLD);
+		MPI_Send( &partial_sol[0], k, MPI_INT, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD);
 
 	}
 
@@ -103,10 +105,10 @@ void nqueen_master(	unsigned int n,
 		for(int i = 0; i < num_sol; ++i) 
 			sol_list[i] = new unsigned int[n];
 
-		MPI_Recv( &(sol_list[0][0]), num_sol*n, MPI_UNSIGNED, stat.SOURCE, stat.TAG, MPI_COMM_WORLD, &stat);
+		MPI_Recv( &(sol_list[0][0]), num_sol*n, MPI_UNSIGNED, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD, &stat);
 
 		for (int i = 0; i < num_sol; ++i){
-			for (int j = 0; j < n; ++j) 
+			for (unsigned int j = 0; j < n; ++j) 
 				all_solns[i].push_back(sol_list[i][j]);
 		}
 
@@ -115,9 +117,10 @@ void nqueen_master(	unsigned int n,
 		
 	// Send termination signals to each worker processor
 	std::vector<int> partial_sol(k, -1);
-	MPI_Bcast( partial_sol[0], k, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
+	MPI_Bcast( &partial_sol[0], k, MPI_INT, 0, MPI_COMM_WORLD);
 
 }
+
 
 void nqueen_worker(	unsigned int n,
 					unsigned int k) {
@@ -144,14 +147,14 @@ void nqueen_worker(	unsigned int n,
 
 		// convert 2D unsigned int vector to 2D unsigned int array
 		unsigned int** sol_list = new unsigned int*[sols.size()];
-		for(int i = 0; i < sols.size(); ++i) {
+		for(unsigned int i = 0; i < sols.size(); ++i) {
 			sol_list[i] = new unsigned int[n];
-			for (int j = 0; j < n; ++j)
+			for (unsigned int j = 0; j < n; ++j)
 				sol_list[i][j] = sols[i][j];
 		}
 
 		// send 2D unsigned int array
-		MPI_Send(&(sol_list[0][0]), sol.size()*n, MPI_UNSIGNED, 0, stat.TAG, MPI_COMM_WORLD);
+		MPI_Send(&(sol_list[0][0]), sol.size()*n, MPI_UNSIGNED, 0, stat.MPI_TAG, MPI_COMM_WORLD);
 	}
 }
 
@@ -168,11 +171,11 @@ bool is_valid(std::vector<int> curr, int curr_row, int curr_col, unsigned int k)
 			return false;
 		int row = curr[col];
 
-		if (curr_row + curr_col - row < k){
+		if (curr_row + curr_col - row < int(k)){
 			if (curr[curr_row + curr_col - row] == row) 
 				return false;}
 
-		if (-curr_row + curr_col + row >= 0 && -curr_row + curr_col + row < k){
+		if (-curr_row + curr_col + row >= 0 && -curr_row + curr_col + row < int(k)){
 			if (curr[-curr_row + curr_col + row] == row) 
 				return false;}
 	}
@@ -186,9 +189,9 @@ std::vector<int> search_step(unsigned int n, unsigned int k){
 	
 	std::vector<int> curr(k, -1);
 	
-	for (int col = 0; col < k; ++col)
+	for (unsigned int col = 0; col < k; ++col)
 	{
-		for (int row = 0; row < n; ++row)
+		for (unsigned int row = 0; row < n; ++row)
 		{
 			if (!is_valid(curr, row, col, k)) 
 				continue;
@@ -201,12 +204,12 @@ std::vector<int> search_step(unsigned int n, unsigned int k){
 }
 
 // Start from current node at level k (current partial solution) to next node at level k (next partial solution) in in-order-traversal order
-bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, int col){
+bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, unsigned int col){
 
 	if (col < 0) 
 		return false;
 
-	for (int row = curr[col]+1; row < n; ++row)
+	for (unsigned int row = curr[col]+1; row < n; ++row)
 	{
 		if (!is_valid(curr, row, col, k)) 
 			continue;
@@ -222,16 +225,17 @@ bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, int
 	return search_partial(n, k, curr, col-1);
 }
 
+
 void search_full(std::vector<std::vector<unsigned int> >& sols,
 				 std::vector<int>& curr, unsigned int n, unsigned int col)
 {
 	if (col == n){
-		std::vector<int> new_sol = curr;
+		std::vector<unsigned int> new_sol(curr.begin(), curr.end());
 		sols.push_back(new_sol);
 		return;
 	}
 
-	for (int row = 0; row < n; ++row)
+	for (unsigned int row = 0; row < n; ++row)
 	{
 		if (!is_valid(curr, row, col, n)) 
 			continue;
