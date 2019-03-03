@@ -14,7 +14,9 @@
 
 /************ Sequential solving function for nqueen*****************
  *
- * Takes the board size as input and creates all solutions to the n-queen problem. All solutions are put in the vector all_solns. Each solution is a vector of length n. Position i in a solution represents the row number of queen in column i. Columns and rows are numbered from 0 to n-1.
+ * Takes the board size as input and creates all solutions to the n-queen problem. 
+ * All solutions are put in the vector all_solns. Each solution is a vector of length n. 
+ * Position i in a solution represents the row number of queen in column i. Columns and rows are numbered from 0 to n-1.
  *
  * Parameters:
  * n : The board size
@@ -35,7 +37,9 @@ void seq_solver(unsigned int n, std::vector<std::vector<unsigned int> >& all_sol
  * Parameters:
  * n : The board size
  * k: The length of solution to be completed by master before handing the job to worker
- * all_solns: A vector containing all solutions. Each solution is a vector of length n. Position i in a solution represents the row number of queen in column i. Columns and rows are numbered from 0 to n-1.
+ * all_solns: A vector containing all solutions. 
+ * Each solution is a vector of length n. Position i in a solution represents the row number of queen in column i. 
+ * Columns and rows are numbered from 0 to n-1.
  *
  * *****************************************************************/
 void nqueen_master(	unsigned int n,
