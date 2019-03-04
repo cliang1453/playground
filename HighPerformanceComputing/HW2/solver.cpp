@@ -15,8 +15,6 @@ bool search_partial( unsigned int n, unsigned int k, std::vector<int>& curr, int
 // Explore all leaf nodes at level n (full solutions) starting from the current node at level k (current partial solution)
 void search_full(std::vector<std::vector<unsigned int> >& sols, std::vector<int>& curr, unsigned int n, unsigned int col);
 
-
-int kill_signal = 0;
 /*************************** solver.h functions ************************/
 
 
@@ -26,9 +24,7 @@ void seq_solver(unsigned int n, std::vector<std::vector<unsigned int> >& all_sol
 	search_full(all_solns, curr, n, 0);
 }
 
-void nqueen_master(	unsigned int n,
-					unsigned int k,
-					std::vector<std::vector<unsigned int> >& all_solns) {
+void nqueen_master(	unsigned int n, unsigned int k, std::vector<std::vector<unsigned int> >& all_solns) {
 
 
 	int num_procs;
@@ -37,11 +33,13 @@ void nqueen_master(	unsigned int n,
 	MPI_Status stat;
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 	bool is_found = true;
+	int cnt = 0;
 
 	/******************* STEP 1: Send one partial solution to each worker ********************/
+	
 	// Initialize the first partial solution
 	std::vector<int> curr = search_step(n, k);
-
+	
 	for (int i = 1; i < num_procs; ++i)
 	{
 		// create a partial solution
@@ -50,14 +48,6 @@ void nqueen_master(	unsigned int n,
 		
 		if (!is_found) break;
 
-		
-
-		// for (unsigned int i = 0; i < k; ++i)
-		// {
-		// 	std::cout<<curr[i];
-		// }
-		// std::cout<<std::endl;
-
 		// send partial solution to a worker (vector<int>)
 		std::vector<int> partial_sol = curr;
 		MPI_Send( &partial_sol[0], k, MPI_INT, i, 111, MPI_COMM_WORLD);
@@ -65,54 +55,38 @@ void nqueen_master(	unsigned int n,
 
 
 	/******************* STEP 2: Send partial solutions to workers as they respond ********************/
+
 	while(true)
 	{
-		// receive completed work from a worker processor (unsigned int[][])
+		// receive completed work from a worker processor (vector<unsigned int>)
 		MPI_Iprobe(MPI_ANY_SOURCE, 111, MPI_COMM_WORLD, &flag, &stat);
 		MPI_Get_count(&stat, MPI_UNSIGNED, &num_sol);
 		
 		if (!flag)
 		{
-			if (!is_found) break; 
-			else continue;
-		}
-		
-		std::cout<<num_sol<<std::endl;
-		unsigned int** sol_list = new unsigned int*[num_sol/n];
-		for(unsigned int i = 0; i < num_sol/n; ++i) 
-			sol_list[i] = new unsigned int[n];
-
-		MPI_Recv( &(sol_list[0][0]), num_sol, MPI_UNSIGNED, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD, &stat);
-
-		// store the received sol_list (unsigned int[][]) in all_solns (vector<vector<unsigned int>>)
-		
-		for (unsigned int i = 0; i < num_sol/n; ++i)
-		{
-			for (unsigned int j = 0; j < n; ++j)
-			{ 
-				std::cout<<sol_list[i][j];
+			if (!is_found){
+				cnt += 1;
+				if(cnt > 10000) break;
 			}
-			std::cout<<std::endl;
+			continue;
 		}
-		std::cout<<"====="<<std::endl;
+		
+		std::vector<unsigned int> sol_list(num_sol);
+		MPI_Recv( &sol_list[0], num_sol, MPI_UNSIGNED, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD, &stat);
 
+		// store the received sol_list (vector<unsigned int>) in all_solns (vector<vector<unsigned int>>)
 		for (unsigned int i = 0; i < num_sol/n; ++i){
 			std::vector<unsigned int> v;
-			for (unsigned int j = 0; j < n; ++j)
-				v.push_back(sol_list[i][j]);
+			for(unsigned int j = 0; j < n; ++j)
+				v.push_back(sol_list[i * n + j]);
 			all_solns.push_back(v);
 		}
 
-		for (unsigned int i = 0; i < num_sol/n; i++)
-			delete[] sol_list[i];
-		delete[] sol_list;
-
-
-		// create a partial solution 
+		// create a new partial solution 
 		if (is_found)
 			is_found = search_partial(n, k, curr, int(k-1));
 		
-		// send partial solution to the word that responded
+		// send partial solution to the worker that responded (vector<int>)
 		if (is_found){
 			std::vector<int> partial_sol = curr;
 			MPI_Send( &partial_sol[0], k, MPI_INT, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD);
@@ -121,18 +95,7 @@ void nqueen_master(	unsigned int n,
 
 	/********************** STEP 3: Terminate **************************/
 	
-	// Send termination signals to each worker processor
-	for (int i = 0; i < all_solns.size(); ++i)
-	{
-		for (int j = 0; j < n; ++j)
-		{
-			std::cout<<all_solns[i][j];
-		}
-		std::cout<<std::endl;
-	}
-	std::cout<<"====="<<std::endl;
-
-
+	//Send termination signals to each worker processor
 	for (int i = 1; i < num_procs; ++i)
 	{
 		std::vector<int> partial_sol(k, -1);
@@ -141,23 +104,15 @@ void nqueen_master(	unsigned int n,
 }
 
 
-void nqueen_worker(	unsigned int n,
-					unsigned int k) {
+void nqueen_worker(	unsigned int n, unsigned int k) {
 
-
-
-	// TODO: Implement this function
-
-	// Following is a general high level layout that you can follow (you are not obligated to design your solution in this manner. This is provided just for your ease).
 
 	MPI_Status stat;
 	std::vector<int> sol(k);
-	std::cout<<kill_signal<<std::endl;
-	int flag;
 	
 	while(true) {
 
-
+		// receive partial solution from master (vector<int>)
 		MPI_Recv(&sol[0], k, MPI_INT, 0, 111, MPI_COMM_WORLD, &stat);
 		if(sol[0] == -1) break;
 		sol.resize(n, -1);
@@ -166,27 +121,15 @@ void nqueen_worker(	unsigned int n,
 		std::vector<std::vector<unsigned int> > sols;
 		search_full(sols, sol, n, k);
 
-		// convert 2D unsigned int vector to 2D unsigned int array
-		unsigned int** sol_list = new unsigned int*[sols.size()];
+		// convert 2D unsigned int vector to 1D unsigned int vector
+		std::vector<unsigned int> sol_list;
 		for(unsigned int i = 0; i < sols.size(); ++i) {
-			sol_list[i] = new unsigned int[n];
 			for (unsigned int j = 0; j < n; ++j)
-				sol_list[i][j] = sols[i][j];
+				sol_list.push_back(sols[i][j]);
 		}
 
-		// std::cout<<sols.size()*n<<std::endl;
-		// for(unsigned int i = 0; i < sols.size(); ++i) {
-		// 	for (unsigned int j = 0; j < n; ++j)
-		// 		std::cout<<sol_list[i][j];
-		// 	std::cout<<std::endl;
-		// }
-
-
-		// send 2D unsigned int array
-		MPI_Send(&(sol_list[0][0]), sols.size()*n, MPI_UNSIGNED, 0, stat.MPI_TAG, MPI_COMM_WORLD);
-		for (unsigned int i = 0; i <sols.size(); i++)
-			delete[] sol_list[i];
-		delete[] sol_list;
+		// send full solution to master (vector<unsigned int>)
+		MPI_Send(&sol_list[0], sol_list.size(), MPI_UNSIGNED, 0, stat.MPI_TAG, MPI_COMM_WORLD);
 	}
 }
 
@@ -195,23 +138,22 @@ void nqueen_worker(	unsigned int n,
 /*************************** DEFINE YOUR HELPER FUNCTIONS HERE ************************/
 
 // Check if it is valid to put Q at board[curr_row][curr_col]
-bool is_valid(std::vector<int> curr, int curr_row, int curr_col, unsigned int k){
+bool is_valid(std::vector<int> curr, unsigned int curr_row, int curr_col, unsigned int k){
 	
-	for (int col = 0; col < curr_col; ++col)
-	{
-		if (curr_row == curr[col]) 
+	for (int col = 0; col < curr_col; ++col){
+
+		if (int(curr_row) == curr[col]) 
 			return false;
 		int row = curr[col];
 
-		if (curr_row + curr_col - row < int(k)){
-			if (curr[curr_row + curr_col - row] == row) 
+		if (curr_row + curr_col - row < k){
+			if (curr[curr_row + curr_col - row] == row && row != -1) 
 				return false;}
 
-		if (-curr_row + curr_col + row >= 0 && -curr_row + curr_col + row < int(k)){
+		if (-curr_row + curr_col + row >= 0 && -curr_row + curr_col + row < k){
 			if (curr[-curr_row + curr_col + row] == row) 
 				return false;}
 	}
-		
 
 	return true;
 }
