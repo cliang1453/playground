@@ -1,5 +1,5 @@
 #include "solver.h"
-
+#include <queue>
 
 /*************************** DECLARE YOUR HELPER FUNCTIONS HERE ************************/
 
@@ -55,21 +55,32 @@ void nqueen_master(	unsigned int n, unsigned int k, std::vector<std::vector<unsi
 
 
 	/******************* STEP 2: Send partial solutions to workers as they respond ********************/
+    
+    std::queue<std::vector<int>> stored_sol;
 
 	while(true)
 	{
 		// receive completed work from a worker processor (vector<unsigned int>)
 		MPI_Iprobe(MPI_ANY_SOURCE, 111, MPI_COMM_WORLD, &flag, &stat);
-		MPI_Get_count(&stat, MPI_UNSIGNED, &num_sol);
 		
-		if (!flag)
-		{
-			if (!is_found){
-				cnt += 1;
-				if(cnt > 10000) break;
-			}
-			continue;
-		}
+        if (!flag)
+        {
+            if( cnt < num_procs - 1) {
+                if(is_found) {
+                    is_found = search_partial(n, k, curr, int(k-1));
+                }
+            
+                if(is_found) {
+                    std::vector<int> tmp_stored(curr.begin(), curr.end());
+                    stored_sol.push(tmp_stored);
+                }
+                continue;
+            }
+            break;
+        }
+        
+        MPI_Get_count(&stat, MPI_UNSIGNED, &num_sol);
+        
 		
 		std::vector<unsigned int> sol_list(num_sol);
 		MPI_Recv( &sol_list[0], num_sol, MPI_UNSIGNED, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD, &stat);
@@ -82,6 +93,13 @@ void nqueen_master(	unsigned int n, unsigned int k, std::vector<std::vector<unsi
 			all_solns.push_back(v);
 		}
 
+        if(!stored_sol.empty()) {
+            auto partial_sol = stored_sol.front();
+            stored_sol.pop();
+            MPI_Send( &partial_sol[0], k, MPI_INT, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD);
+            continue;
+        }
+
 		// create a new partial solution 
 		if (is_found)
 			is_found = search_partial(n, k, curr, int(k-1));
@@ -91,16 +109,15 @@ void nqueen_master(	unsigned int n, unsigned int k, std::vector<std::vector<unsi
 			std::vector<int> partial_sol = curr;
 			MPI_Send( &partial_sol[0], k, MPI_INT, stat.MPI_SOURCE, stat.MPI_TAG, MPI_COMM_WORLD);
 		}
+        else {
+            cnt++;
+			std::vector<int> kill(k, -1);
+			MPI_Send( &kill[0], k, MPI_INT, stat.MPI_SOURCE, 111, MPI_COMM_WORLD);   
+        }
 	}
 
 	/********************** STEP 3: Terminate **************************/
-	
-	//Send termination signals to each worker processor
-	for (int i = 1; i < num_procs; ++i)
-	{
-		std::vector<int> partial_sol(k, -1);
-		MPI_Send( &partial_sol[0], k, MPI_INT, i, 111, MPI_COMM_WORLD);
-	}
+
 }
 
 
