@@ -14,6 +14,7 @@
 // my implementation:
 #include <iostream>
 #include <math.h>
+#include <cstring>
 using namespace std;
 
 // Calculates y = A*x for a square n-by-n matrix A, and n-dimensional vectors x
@@ -47,20 +48,13 @@ void jacobi(const int n, double* A, double* b, double* x, int max_iter, double l
 	// Compute D and R
 	double D[n];
 	double R[n*n];
+    memcpy(R, A, sizeof(double)*(n*n));
 	
 	for (int r = 0; r < n; ++r)
 	{
-		for (int c = 0; c < n; ++c)
-		{
-			if(r == c){
-				D[r] = A[r * n + c];
-				R[r * n + c] = 0;
-				x[r] = 0;
-			}
-			else{
-				R[r * n + c] = A[r * n + c];
-			}
-		}
+        D[r] = A[r * n + r];
+        R[r * n + r] = 0;
+        x[r] = 0;
 	}
 
 	// Update x iteratively
