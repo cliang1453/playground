@@ -19,6 +19,7 @@
 
 /*
  * TODO: Implement your solutions here
+ * TODO: check correctness of using blocksize_col and blocksize_row for local data in each processors
  */
 
 
@@ -310,8 +311,88 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
                 MPI_Comm comm, int max_iter, double l2_termination)
 {
     
-
+    // get current rank
+    int w_rank, row_rank;
+    MPI_Comm_rank(comm, &w_rank);
     
+    // get process coords in cartesian topology
+    int coords[2];
+    MPI_Cart_coords(comm, w_rank, 2, coords);
+
+    // creates new communicators based on colors and keys, processors with the same colors are in the same communicator 
+    MPI_Comm col_comm, row_comm;
+    MPI_Comm_split(comm, coords[1], coords[0], &col_comm);
+    MPI_Comm_split(comm, coords[0], coords[1], &row_comm);
+    int blocksize_col = block_decompose(n, col_comm);
+    int blocksize_row = block_decompose(n, row_comm);
+    MPI_Comm_rank(row_comm, &row_rank);
+    MPI_Barrier(comm);
+
+
+    // ================ compute local_D and 1/local_D elementwisely ===================
+    double* local_D = (double * ) malloc(blocksize_col * sizeof(double));
+    double* local_D_inv = (double * ) malloc(blocksize_col * sizeof(double));
+
+    // get local_D from diagnoal processor and send to corresponding processor in the first column
+    if (coords[0] == coords[1]){
+        matrix_diag(blocksize_col, blocksize_row, local_A, local_D);
+        if (coords[0] != 0)
+            MPI_Send(local_D, blocksize_col, MPI_DOUBLE, 0, 0, row_comm);
+    }
+
+    if (coords[1] == 0){
+        if (coords[0] != 0)
+            MPI_Recv(local_D, blocksize_col, MPI_DOUBLE, row_rank, 0, row_comm);
+        elementwise_inv(blocksize_col, local_D, local_D_inv);
+    }
+    MPI_Barrier(comm);
+
+
+    // ================ compute local_R ===================
+    double* local_R = (double * ) malloc(blocksize_col * blocksize_row * sizeof(double));
+    
+    if (coords[0] == coords[1])
+        matrix_zero_diag(blocksize_col, blocksize_row, local_A, local_R);
+    else
+        memcpy(local_R, local_A, blocksize_col * blocksize_row * sizeof(double));
+    MPI_Barrier(comm);
+
+    // ================ initialize local_x ======================
+    for (int i = 0; i < blocksize_row; ++i)
+        local_x[i] = 0;
+    MPI_Barrier(comm);
+
+
+    // ================ iteratively update local_x using jacobi method ======================
+    double* local_Rx = (double * ) malloc(blocksize_col * sizeof(double));
+    double* local_Ax = (double * ) malloc(blocksize_col * sizeof(double));
+    double l2;
+    for (int i = 0; i < max_iter; ++i)
+    {
+
+        distributed_matrix_vector_mult(n, local_R, local_x, local_Rx, comm);
+        
+        for (int j = 0; j < blocksize_col; ++j)
+            x[j] = local_D_inv[j] * (local_b[j] - local_Rx[j]);
+
+        distributed_matrix_vector_mult(n, local_A, local_x, local_Ax, comm);
+
+        l2 = 0;
+        for (int j = 0; j < blocksize_col; ++j)
+            l2 += pow(local_b[j] - local_Ax[j], 2);
+        l2 = pow(l2, 0.5);
+
+        MPI_Allreduce(MPI_IN_PLACE, &l2, 1, MPI_DOUBLE, MPI_SUM, comm);
+
+        if(l2 <= l2_termination)
+            break;
+    }
+
+    free(local_D);
+    free(local_D_inv);
+    free(local_R);
+    free(local_Ax);
+    free(local_Rx);
 
 }
 
