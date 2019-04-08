@@ -229,7 +229,6 @@ void transpose_bcast_vector(const int n, double* col_vector, double* row_vector,
     int w_rank;
     MPI_Comm_rank(comm, &w_rank);
     
-
     // get process coords in cartesian topology
     int coords[2];
     MPI_Cart_coords(comm, w_rank, 2, coords);
@@ -268,7 +267,42 @@ void transpose_bcast_vector(const int n, double* col_vector, double* row_vector,
 
 void distributed_matrix_vector_mult(const int n, double* local_A, double* local_x, double* local_y, MPI_Comm comm)
 {
-    // TODO
+    // get current rank
+    int w_rank;
+    MPI_Comm_rank(comm, &w_rank);
+    
+    // get process coords in cartesian topology
+    int coords[2];
+    MPI_Cart_coords(comm, w_rank, 2, coords);
+
+    // creates new communicators based on colors and keys, processors with the same colors are in the same communicator 
+    MPI_Comm col_comm, row_comm;
+    MPI_Comm_split(comm, coords[1], coords[0], &col_comm);
+    MPI_Comm_split(comm, coords[0], coords[1], &row_comm);
+    int blocksize_col = block_decompose(n, col_comm);
+    int blocksize_row = block_decompose(n, row_comm);
+    MPI_Barrier(comm);
+
+    // compute transpose x
+    double * local_x_T = (double *) malloc(blocksize_row * sizeof(double));
+    transpose_bcast_vector(n, local_x, local_x_T, comm);
+    MPI_Barrier(comm);
+
+    // compute y using local matrix
+    double * partial_local_y = (double *) malloc(blocksize_col * sizeof(double));
+    matrix_vector_mult(blocksize_col, blocksize_row, local_A, local_x_T, partial_local_y);
+    MPI_Barrier(comm);
+
+    // note that we need to sum up p number of partial_local_y to get local_y
+    // do a reduction of all partial_local_y along the row to the first column
+    MPI_Reduce(partial_local_y, local_y, blocksize_col, MPI_DOUBLE, MPI_SUM, 0, row_comm);
+    MPI_Barrier(comm);
+
+    free(local_x_T);
+    free(partial_local_y);
+    MPI_Comm_free(&col_comm);
+    MPI_Comm_free(&row_comm);
+    MPI_Barrier(comm);
 }
 
 // Solves Ax = b using the iterative jacobi method
@@ -276,20 +310,9 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
                 MPI_Comm comm, int max_iter, double l2_termination)
 {
     
-    // Compute D and distribute D on the processors along the first column
 
-    // Compute and distribute R
+    
 
-    // Initialize x
-
-    // Start iteratively update x 
-    // for (int i = 0; i < max_iter; ++i)
-    // {
-    //     // exit if termination criteria is met
-    //     // make sure all processor know that they should exit by using MPI_Allreduce
-    //     if (l2 <= l2_termination)
-    //         break;
-    // }
 }
 
 
