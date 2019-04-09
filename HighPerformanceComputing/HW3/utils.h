@@ -71,7 +71,7 @@ inline void matrix_diag(const int n, const int m, const double* A, double* D)
  */
 inline void matrix_zero_diag(const int n, const int m, const double* A, double* R)
 {
-    R = memcpy(R, A, n * m * sizeof(double));
+    memcpy(R, A, n * m * sizeof(double));
     for (int r = 0; r < n; ++r)
         R[r * m + r] = 0;
 }

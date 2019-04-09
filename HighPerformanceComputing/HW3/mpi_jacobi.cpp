@@ -21,6 +21,7 @@
  * TODO: Implement your solutions here
  * TODO: check correctness of using blocksize_col and blocksize_row for local data in each processors
  */
+using namespace std;
 
 
 void distribute_vector(const int n, double* input_vector, double** local_vector, MPI_Comm comm)
@@ -48,7 +49,8 @@ void distribute_vector(const int n, double* input_vector, double** local_vector,
         MPI_Comm_size(col_comm, &p);
         MPI_Comm_rank(col_comm, &curr_rank);
 
-        int* sendcounts, displs;
+        int* sendcounts;
+        int* displs;
         sendcounts = (int*) malloc(p*(sizeof(int)));
         displs = (int*) malloc(p*(sizeof(int)));
         displs[0] = 0;
@@ -104,7 +106,8 @@ void gather_vector(const int n, double* local_vector, double* output_vector, MPI
         MPI_Comm_size(col_comm, &p);
         MPI_Comm_rank(col_comm, &curr_rank);
 
-        int* recvcounts, displs;
+        int* recvcounts;
+        int* displs;
         recvcounts = (int*) malloc(p*(sizeof(int)));
         displs = (int*) malloc(p*(sizeof(int)));
         displs[0] = 0;
@@ -147,7 +150,7 @@ void distribute_matrix(const int n, double* input_matrix, double** local_matrix,
     MPI_Comm_split(comm, coords[1], coords[0], &col_comm);
     MPI_Comm_split(comm, coords[0], coords[1], &row_comm);
     int blocksize_col = block_decompose(n, col_comm);
-
+    double *first_col =(double *) malloc(n*blocksize_col*sizeof(double));
 
     // ======= distribute from data from processor (0, 0) to all processors in the first column ========
     if(coords[1] == 0){
@@ -158,7 +161,8 @@ void distribute_matrix(const int n, double* input_matrix, double** local_matrix,
         MPI_Comm_rank(col_comm, &curr_rank);
 
         // compute sendcounts and displs
-        int* sendcounts, displs;
+        int* sendcounts;
+        int* displs;
         sendcounts = (int*) malloc(p*(sizeof(int)));
         displs = (int*) malloc(p*(sizeof(int)));
         displs[0] = 0;
@@ -170,12 +174,9 @@ void distribute_matrix(const int n, double* input_matrix, double** local_matrix,
                 displs[rank] = displs[rank-1] + sendcounts[rank-1];
         }
 
-        // compute recvbuf and recvcount
-        double *first_col =(double *) malloc(sendcounts[curr_rank]*sizeof(double));
-
         // Scatter from processor (0, 0) 
         MPI_Scatterv(input_matrix, sendcounts, displs,
-                 MPI_DOUBLE, *first_col, sendcounts[curr_rank],
+                 MPI_DOUBLE, first_col, sendcounts[curr_rank],
                  MPI_DOUBLE, 0, col_comm);
 
         free(sendcounts);
@@ -194,7 +195,8 @@ void distribute_matrix(const int n, double* input_matrix, double** local_matrix,
     MPI_Comm_rank(row_comm, &curr_rank);
     
     // compute sendcounts and displs
-    int* sendcounts, displs;
+    int* sendcounts;
+    int* displs;
     sendcounts = (int*) malloc(p*(sizeof(int)));
     displs = (int*) malloc(p*(sizeof(int)));
     displs[0] = 0;
@@ -327,6 +329,7 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
     int blocksize_row = block_decompose(n, row_comm);
     MPI_Comm_rank(row_comm, &row_rank);
     MPI_Barrier(comm);
+    //cout<<"finish create new communicator and initialization"<<endl;
 
 
     // ================ compute local_D and 1/local_D elementwisely ===================
@@ -336,16 +339,21 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
     // get local_D from diagnoal processor and send to corresponding processor in the first column
     if (coords[0] == coords[1]){
         matrix_diag(blocksize_col, blocksize_row, local_A, local_D);
-        if (coords[0] != 0)
+        if (coords[1] != 0)
             MPI_Send(local_D, blocksize_col, MPI_DOUBLE, 0, 0, row_comm);
     }
+    
+    //cout<<row_rank<<" finish send local_D and 1/local_D"<<endl;
+    MPI_Barrier(comm);
 
     if (coords[1] == 0){
         if (coords[0] != 0)
-            MPI_Recv(local_D, blocksize_col, MPI_DOUBLE, row_rank, 0, row_comm);
+            MPI_Recv(local_D, blocksize_col, MPI_DOUBLE, coords[0], 0, row_comm, MPI_STATUS_IGNORE);
+
         elementwise_inv(blocksize_col, local_D, local_D_inv);
     }
     MPI_Barrier(comm);
+    //cout<<"finish recv local_D and 1/local_D"<<endl;
 
 
     // ================ compute local_R ===================
@@ -356,43 +364,62 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
     else
         memcpy(local_R, local_A, blocksize_col * blocksize_row * sizeof(double));
     MPI_Barrier(comm);
-
+    //cout<<"finish compute local_R."<<endl;
+    
     // ================ initialize local_x ======================
     for (int i = 0; i < blocksize_row; ++i)
         local_x[i] = 0;
     MPI_Barrier(comm);
+    //cout<<"finish initialize local_x"<<endl;
 
 
     // ================ iteratively update local_x using jacobi method ======================
     double* local_Rx = (double * ) malloc(blocksize_col * sizeof(double));
     double* local_Ax = (double * ) malloc(blocksize_col * sizeof(double));
-    double l2;
+    double l2 = 0; 
     for (int i = 0; i < max_iter; ++i)
     {
 
+        //cout<<"begin iteration "<<i<<endl;
+
         distributed_matrix_vector_mult(n, local_R, local_x, local_Rx, comm);
+        //cout<<"finish compute local_Rx at iteration "<<i<<endl;
         
-        for (int j = 0; j < blocksize_col; ++j)
-            x[j] = local_D_inv[j] * (local_b[j] - local_Rx[j]);
+
+        if (coords[1] == 0){
+            for (int j = 0; j < blocksize_col; ++j)
+                local_x[j] = local_D_inv[j] * (local_b[j] - local_Rx[j]);
+        }
+        //cout<<"finish update local_x at iteration "<<i<<endl;
+
 
         distributed_matrix_vector_mult(n, local_A, local_x, local_Ax, comm);
+        //cout<<"finish compute local_Ax at iteration "<<i<<endl;
 
-        l2 = 0;
-        for (int j = 0; j < blocksize_col; ++j)
-            l2 += pow(local_b[j] - local_Ax[j], 2);
-        l2 = pow(l2, 0.5);
+        if (coords[1] == 0){
+            l2 = 0;
+            for (int j = 0; j < blocksize_col; ++j)
+                l2 += pow(local_b[j] - local_Ax[j], 2);
+        }
+        //cout<<"finish compute l2 at iteration "<<i<<endl;
 
         MPI_Allreduce(MPI_IN_PLACE, &l2, 1, MPI_DOUBLE, MPI_SUM, comm);
+        cout<<"l2 computed at iteration "<<i<<": "<<pow(l2, 0.5)<<", corresponding l2_termination condition: "<<l2_termination<<endl;
+        //cout<<"finish MPI_Allreduce l2 at iteration "<<i<<endl;
 
-        if(l2 <= l2_termination)
+        if(pow(l2, 0.5) <= l2_termination)
             break;
     }
+    cout<<"exit at max_iter "<<max_iter<<endl;
 
     free(local_D);
     free(local_D_inv);
     free(local_R);
     free(local_Ax);
     free(local_Rx);
+    MPI_Comm_free(&col_comm);
+    MPI_Comm_free(&row_comm);
+    MPI_Barrier(comm);
 
 }
 
