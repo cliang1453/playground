@@ -37,7 +37,7 @@ void matrix_vector_mult(const int n, const int m, const double* A, const double*
     {
     	y[r] = 0;
     	for (int c = 0; c < m; ++c)
-    		y[r] += A[r * n + c] * x[c];
+    		y[r] += A[r * m + c] * x[c];
     }
 }
 
