@@ -1,8 +1,6 @@
 import sys
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from utils import plot
 
 class MatrixNormAnalyzer(object):
 	"""MatrixNormAnalyzer Class"""
@@ -79,29 +77,8 @@ class MatrixNormAnalyzer(object):
 			avg_conds.append(np.mean(np.array(avg_cond)))
 			print("Finish " + str(m/100.0) + "%")
 
-		self.plot(x = sizes, y = avg_rs, x_label = "size of matrix", y_label = "||L||_2/||L||_inf", name = "norm_ratio")
-		self.plot(x = sizes, y = avg_conds, x_label = "size of matrix", y_label = "conditional number", name = "conditional_number")
-
-	def plot(self, x = None, y = None, x_label = "", y_label = "", name = ""):
-
-		"""
-		Plot the input statistics.
-
-		input: 
-			x: list[int]
-		    y: list[int]
-		    x_label: str
-		    y_label: str
-		    name: str
-		output:
-			none
-		"""
-		plt.plot(x, y)
-		plt.xlabel(x_label)
-		plt.ylabel(y_label)
-		plt.title(y_label + " vs. " + x_label)
-		plt.savefig(name + ".png")
-		plt.close()
+		plot(x = sizes, y = avg_rs, x_label = "size of matrix", y_label = "||L||_2/||L||_inf", name = "norm_ratio")
+		plot(x = sizes, y = avg_conds, x_label = "size of matrix", y_label = "conditional number", name = "conditional_number")
 
 
 def main(argv):
