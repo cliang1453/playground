@@ -47,7 +47,7 @@ class MatrixNormAnalyzer(object):
 
 		avg_rs = []
 		avg_conds = []
-		sizes = [m for m in range(100, 10000, 100)]
+		sizes = [m for m in range(100, 2100, 100)]
 
 		for m in sizes:
 	
