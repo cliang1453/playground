@@ -403,8 +403,8 @@ void distributed_jacobi(const int n, double* local_A, double* local_b, double* l
         }
         //cout<<"finish compute l2 at iteration "<<i<<endl;
 
-        MPI_Allreduce(MPI_IN_PLACE, &l2, 1, MPI_DOUBLE, MPI_SUM, comm);
-        cout<<"l2 computed at iteration "<<i<<": "<<pow(l2, 0.5)<<", corresponding l2_termination condition: "<<l2_termination<<endl;
+        MPI_Allreduce(MPI_IN_PLACE, &l2, 1, MPI_DOUBLE, MPI_SUM, row_comm);
+        cout<<"l2 computed at iteration "<<i<<": "<<sqrt(l2)<<", corresponding l2_termination condition: "<<l2_termination<<endl;
         //cout<<"finish MPI_Allreduce l2 at iteration "<<i<<endl;
 
         if(pow(l2, 0.5) <= l2_termination)

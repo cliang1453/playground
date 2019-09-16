@@ -60,7 +60,7 @@ def main(argv):
 	# create top n recommendation for each individual
 	N = 10
 	recomm_rdd = recomm_rdd.groupByKey()\
-					.mapValues(lambda person: sorted(person, key = lambda x: x[1], reverse=True)[:N])\
+					.mapValues(lambda person: sorted(person, key = lambda x: x[1][1], reverse=True)[:N])\
 					.map(lambda person: (person[0], [x[0] for x in person[1]]))
 
 
