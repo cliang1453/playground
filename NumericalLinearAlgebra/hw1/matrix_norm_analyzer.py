@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from utils import plot
+from utils import plot_norm
 
 class MatrixNormAnalyzer(object):
 	"""MatrixNormAnalyzer Class"""
@@ -77,8 +77,8 @@ class MatrixNormAnalyzer(object):
 			avg_conds.append(np.mean(np.array(avg_cond)))
 			print("Finish " + str(m/100.0) + "%")
 
-		plot(x = sizes, y = avg_rs, x_label = "size of matrix", y_label = "||L||_2/||L||_inf", name = "norm_ratio")
-		plot(x = sizes, y = avg_conds, x_label = "size of matrix", y_label = "conditional number", name = "conditional_number")
+		plot_norm(x = sizes, y = avg_rs, x_label = "size of matrix", y_label = "||L||_2/||L||_inf", name = "norm_ratio")
+		plot_norm(x = sizes, y = avg_conds, x_label = "size of matrix", y_label = "conditional number", name = "conditional_number")
 
 
 def main(argv):
