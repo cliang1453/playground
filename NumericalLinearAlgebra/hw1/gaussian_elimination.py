@@ -1,5 +1,5 @@
 import numpy as np
-from utils import plot_solutions, plot_sol_comparison, plot_runtime_comparison
+from utils import plot_solutions, plot_sol_comparison, plot_runtime_comparison, plot_error_comparison
 import time
 
 class GaussianElimination(object):
@@ -118,7 +118,8 @@ def main(num_discretization = None, params = None, exact_solution = None):
 	# plot
 	plot_solutions(params, num_discretization, solution_naive, exact_solution, "Naive")
 	plot_solutions(params, num_discretization, solution_pivoting, exact_solution, "Pivoting")
-	
+
+	plot_error_comparison(params, num_discretization, solution_naive, solution_pivoting, exact_solution)
 	plot_sol_comparison(params, num_discretization, solution_naive, solution_pivoting)
 	plot_runtime_comparison(params, num_discretization, runtime_naive, runtime_pivoting)
 

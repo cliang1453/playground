@@ -45,12 +45,14 @@ class MatrixNormAnalyzer(object):
 
 		avg_rs = []
 		avg_conds = []
+		avg_norms = {1:[], 2:[], -1:[]}
 		sizes = [m for m in range(100, 2100, 100)]
 
 		for m in sizes:
 	
 			avg_r = []
 			avg_cond = []
+			avg_norm = {1:[], 2:[], -1:[]}
 
 			for _ in range(int(num_exp)):
 
@@ -67,6 +69,10 @@ class MatrixNormAnalyzer(object):
 				# compute infinite-norm
 				inf_norm = self.compute_norm(L = L, p = -1)
 
+				avg_norm[1].append(one_norm)
+				avg_norm[2].append(two_norm)
+				avg_norm[-1].append(inf_norm)
+
 				# compute ratio of 2_norm and infinite norm
 				avg_r.append(two_norm / inf_norm)
 
@@ -75,8 +81,14 @@ class MatrixNormAnalyzer(object):
 
 			avg_rs.append(np.mean(np.array(avg_r)))
 			avg_conds.append(np.mean(np.array(avg_cond)))
+			avg_norms[1].append(np.mean(np.array(avg_norm[1])))
+			avg_norms[2].append(np.mean(np.array(avg_norm[2])))
+			avg_norms[-1].append(np.mean(np.array(avg_norm[-1])))
 			print("Finish " + str(m/100.0) + "%")
 
+		plot_norm(x = sizes, y = avg_norms[1], x_label = "size of matrix", y_label = "||L||_1", name = "l1_norm")
+		plot_norm(x = sizes, y = avg_norms[2], x_label = "size of matrix", y_label = "||L||_2", name = "l2_norm")
+		plot_norm(x = sizes, y = avg_norms[-1], x_label = "size of matrix", y_label = "||L||_inf", name = "l_inf_norm")
 		plot_norm(x = sizes, y = avg_rs, x_label = "size of matrix", y_label = "||L||_2/||L||_inf", name = "norm_ratio")
 		plot_norm(x = sizes, y = avg_conds, x_label = "size of matrix", y_label = "conditional number", name = "conditional_number")
 
