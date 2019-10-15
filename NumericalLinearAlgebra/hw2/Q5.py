@@ -4,8 +4,8 @@ from QR_factorization_solver import QRFactorizationSolver
 from utils import *
 
 def gen_matrix(sin_vals, n):
-	Sigma = np.diag(sin_vals)
 	
+	Sigma = np.diag(sin_vals)
 	U = np.random.rand(n, n) 
 	V = np.random.rand(n, n)
 
@@ -22,24 +22,34 @@ def gen_matrix(sin_vals, n):
 def main(n_range):
 
 	solver = QRFactorizationSolver()
-	times = {"classical":[], "modified":[]}
+	times = {"classical": [], "modified": []}
 
 	for n in n_range:
-		sin_vals = np.array([3**(-i) for i in range(1, n+1)])
-		A = gen_matrix(sin_vals, n)
 		
-		start = time.time()
-		solver.classicalGramSchmidt()
-		times["classical"].append(time.time() - start)
+		sin_vals = np.array([3**(-i) for i in range(1, n+1)])
+		n_times = {"classical": [], "modified": []}
 
-		start = time.time()
-		solver.modifiedGramSchmidt()
-		times["modified"].append(time.time() - start)
+		for _ in range(10):
 
-	plot_runtime(n_range, times["classical"])
-	plot_runtime(n_range, times["modified"])
+			A = gen_matrix(sin_vals, n)
+			
+			start = time.time()
+			solver.classicalGramSchmidt(A)
+			n_times["classical"].append(time.time() - start)
+
+			start = time.time()
+			solver.modifiedGramSchmidt(A)
+			n_times["modified"].append(time.time() - start)
+
+		times["classical"].append(np.mean(n_times["classical"]))
+		times["modified"].append(np.mean(n_times["modified"]))
+
+
+	plot_runtime_comparison(n_range, times["classical"], times["modified"])
+
+
 
 	
 if __name__ == '__main__':
-	n_range = [10, 100, 1000, 10000]
+	n_range = [100, 200, 300]
 	main(n_range)

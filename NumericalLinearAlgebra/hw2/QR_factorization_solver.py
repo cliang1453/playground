@@ -16,45 +16,52 @@ class QRFactorizationSolver(object):
 
 	def classicalGramSchmidt(self, A = None):
 
-		N, M = A.shape
+		M, N = A.shape
 		Q = A.copy()
 		R = np.zeros(A.shape)
 
 		for j in range(N):
-			v = A[j]
+			v = A[:, j]
+			
 			for i in range(j):
-				R[i,j] = np.dot(Q[i], A[j])
-				v = v - R[i, j] * Q[i]
+				R[i,j] = np.dot(Q[:, i], A[:, j])
+				v = v - R[i, j] * Q[:, i]
+			
 			R[j, j] = np.linalg.norm(v, 2)
-			Q[j] = v / R[j, j]
+			Q[:, j] = v / R[j, j]
 
 		return Q, R
 
 	def modifiedGramSchmidt(self, A = None):
 
-		N, M = A.shape
+		M, N = A.shape
 		V = A.copy()
-		Q = A.copy()
+		Q = np.zeros(A.shape)
 		R = np.zeros(A.shape)
 
-		for j in range(N):
-
+		for i in range(N):
+			R[i, i] = np.linalg.norm(V[:, i], 2)
+			Q[:, i] = V[:, i]/R[i, i]
+			
+			for j in range(i + 1, N):
+				R[i, j] = np.dot(Q[:, i], V[:, j])
+				V[:, j] = V[:, j] - R[i, j] * Q[:, i]
 
 	def householderTriangularization(self, A = None, upper_band = math.inf, lower_band = math.inf):
 
-		N, M = A.shape
-	
-		for k in range(1, N):
+		M, N = A.shape
+		
+		for k in range(N):
 
-			n = min(k+lower_band, N)
-			m = min(k+upper_band, M)
+			m = min(k + lower_band, M)
+			n = min(k + upper_band, N)
 
-			x = A[k:n, k]
+			x = A[k:m, k]
 			e = np.zeros(x.shape)
 			e[0] = 1
 			v = np.sign(x[0]) * np.linalg.norm(x, 2) * e + x
 			v = v / np.linalg.norm(v, 2)
-			A[k:n, k:m] = A[k:n, k:m] - 2 * np.matmul(np.outer(v, v), A[k:n, k:m])
+			A[k:m, k:n] = A[k:m, k:n] - 2 * np.matmul(np.outer(v, v), A[k:m, k:n])
 
 		return A
 

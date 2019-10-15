@@ -20,10 +20,6 @@ def main(m_range):
 
 	plot_runtime(m_range, times)
 
-
-	
-
-
 if __name__ == '__main__':
 	m_range = [10, 100, 1000, 10000]
 	main(m_range)
