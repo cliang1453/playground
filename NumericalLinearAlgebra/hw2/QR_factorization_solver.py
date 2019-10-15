@@ -47,23 +47,29 @@ class QRFactorizationSolver(object):
 				R[i, j] = np.dot(Q[:, i], V[:, j])
 				V[:, j] = V[:, j] - R[i, j] * Q[:, i]
 
+		return Q, R
+
 	def householderTriangularization(self, A = None, upper_band = math.inf, lower_band = math.inf):
 
 		M, N = A.shape
+		R = A.copy()
+
 		
 		for k in range(N):
 
 			m = min(k + lower_band, M)
 			n = min(k + upper_band, N)
 
-			x = A[k:m, k]
+			# print((k, m, n))
+
+			x = R[k:m, k]
 			e = np.zeros(x.shape)
 			e[0] = 1
 			v = np.sign(x[0]) * np.linalg.norm(x, 2) * e + x
 			v = v / np.linalg.norm(v, 2)
-			A[k:m, k:n] = A[k:m, k:n] - 2 * np.matmul(np.outer(v, v), A[k:m, k:n])
+			R[k:m, k:n] = R[k:m, k:n] - 2 * np.matmul(np.outer(v, v), R[k:m, k:n])
 
-		return A
+		return R
 
 
 
