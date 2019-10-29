@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def main(R = None, P = None, N = 5000, D_len = 4, S_len = 2):
 
 	P_star = np.zeros((D_len, S_len, S_len))
