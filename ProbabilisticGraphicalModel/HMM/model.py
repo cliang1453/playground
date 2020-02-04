@@ -36,7 +36,6 @@ class BioHmm(object):
 				t1, t2, t3 = IDX[tag1], IDX[tag2], IDX[tag3]
 				self.trigram_prob[t1][t2][t3] = self.three_gram_cnt[three_gram]/self.two_gram_cnt[two_gram]
 		self.trigram_prob = np.array(self.trigram_prob)
-		# print(self.trigram_prob)
 
 	def viterbi_decoding(self, old_sentence):
 
@@ -48,29 +47,30 @@ class BioHmm(object):
 		# Y[T]: output tag sequence
 		sentence = old_sentence.copy()
 		T = len(sentence)
-		V = [[[0] * len(TAG) for _ in  range(len(TAG))] for _ in range(T)]
-		B = [[[0] * len(TAG) for _ in  range(len(TAG))] for _ in range(T)]
-		Y = [0] * T
 		for t in range(T):
 			if sentence[t] not in self.emission_prob:
 				sentence[t] = "_RARE_"
 
+		V = [[[0] * len(TAG) for _ in  range(len(TAG))] for _ in range(T)]
+		B = [[[0] * len(TAG) for _ in  range(len(TAG))] for _ in range(T)]
+		Y = [0] * T
 		
 		# initialization
 		V[0][IDX["*"]][:] = self.trigram_prob[IDX["*"], IDX["*"], :] * np.array(self.emission_prob[sentence[0]])
-		for s1 in range(len(TAG)):
-			V[1][s1][:] = V[0][IDX["*"]][s1] * self.trigram_prob[IDX["*"], s1, :] * np.array(self.emission_prob[sentence[1]])
+		for s2 in range(len(TAG)):
+			for s3 in range(len(TAG)):
+				V[1][s2][s3] = np.array(V[0][IDX["*"]][s2]) * self.trigram_prob[IDX["*"], s2, s3] * self.emission_prob[sentence[1]][s3]
 
 		# forward
 		for t in range(2, T):
-			for s1 in range(len(TAG)):
-				for s2 in range(len(TAG)):
-					curr = np.array(V[t-1][:][s1]) * self.trigram_prob[:, s1, s2] * np.array(self.emission_prob[sentence[t]])
-					V[t][s1][s2] = np.max(curr)
-					B[t][s1][s2] = np.argmax(curr)
+			for s2 in range(len(TAG)):
+				for s3 in range(len(TAG)):
+					curr = np.array(V[t-1][:][s2]) * self.trigram_prob[:, s2, s3] * self.emission_prob[sentence[t]][s3]
+					V[t][s2][s3] = np.max(curr)
+					B[t][s2][s3] = np.argmax(curr)
 
 		curr = np.array(V[T-1][:][:]) * self.trigram_prob[:, :, IDX["STOP"]]
-		Y[-2], Y[-1] = np.unravel_index(curr.argmax(), curr.shape)
+		Y[T-2], Y[T-1] = np.unravel_index(curr.argmax(), curr.shape)
 
 		for t in range(T-3, -1, -1):
 			Y[t] = B[t+2][Y[t+1]][Y[t+2]]
@@ -114,7 +114,6 @@ class BioHmm(object):
 				self.three_gram_cnt[(tag1, tag2, tag3)] += int(cnt)
 
 			l = data.readline()
-
 
 	def predict(self, file_name = ""):
 
