@@ -5,6 +5,7 @@ x = p.variables(1);
 y = p.variables(2);
 z = p.variables(3);
 size = p.size;
+
 q_z = rand([size(3) 1]);
 q_z = array(z, q_z./sum(sum(q_z)));
 
@@ -17,4 +18,5 @@ for t=1:T
 end;
 fprintf(1,'Minimum KL-divergence is = %g\n',KL(T));
 approx = table(q_xyz);
+figure; plot(approx(:),'x'); hold on; plot(p.table(:),'o'); legend('q','p');
 fprintf(1,'Mean deviation between p and q approx = %g\n',mean(abs(approx(:)-p.table(:))))
